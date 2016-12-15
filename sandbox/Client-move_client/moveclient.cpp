@@ -17,23 +17,31 @@ MoveClient::MoveClient (QObject* parent) : QObject (parent) {
 
 void MoveClient::slotReadStream () {
 	while (socket->bytesAvailable () > 0) {
-		QByteArray value = socket->readLine ();
+		bufferArray.append (socket->readAll ());
+		std::cout << bufferArray.size () << std::endl;
 		
-		QDataStream input (&value, QIODevice::ReadOnly);
-		QString command; input >> command;
-		
-		if (command == "squares") {
-			qint32 number = 0;
-			input >> number;
+		if ((bufferArray.size () >= sizeof (qint32)) && need == 0) {
+			QDataStream input (&bufferArray, QIODevice::ReadOnly);
+			input >> need;
 			
-			std::cout << number << std::endl;
-			while (number > 0) {
-				qint32 x; input >> x;
-				qint32 y; input >> y;
-				
+			std::cout << need << std::endl;
+			bufferArray.remove (0, sizeof (qint32));
+		}
+		
+		if (bufferArray.size () >= need && need != 0) {
+			QDataStream input (&bufferArray, QIODevice::ReadOnly);
+			QString command; input >> command;
+			qint32  number;  input >> number;
+			std::cout << "Command: " << command.toStdString () << std::endl;
+			std::cout << "Clients: " << number << std::endl;
+			
+			for (int i = 0; i < number; i ++) {
+				qint32 x, y; input >> x >> y;
 				std::cout << x << " " << y << std::endl;
-				number --;
 			}
+			
+			bufferArray.remove (0, need);
+			need = 0;
 		}
 	}
 }

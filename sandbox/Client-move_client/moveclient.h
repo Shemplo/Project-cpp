@@ -19,6 +19,8 @@ class MoveClient : public QObject {
 	private:
 		QTcpSocket* socket;
 		qint32 x, y, areaWidth, areaHeight;
+		qint32 read = 0, need = 0, avail = 0;
+		QByteArray bufferArray, storageArray;
 		
 };
 
