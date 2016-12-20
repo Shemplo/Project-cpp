@@ -16,7 +16,7 @@ Dron::Dron (QObject* parent) : QObject (parent),
 	diagonal = std::sqrt (width * width + height * height) / 2;
 	std::cout << "Diagonal: " << diagonal << std::endl;
 	
-	speed = 3;
+	speed = 2;
 	angle = std::rand () % 180;
 }
 
@@ -129,15 +129,6 @@ QPolygonF Dron::boundingPolygon (qreal x, qreal y, qreal a) {
 	bounds << QPointF (x - diagonal * std::cos (rad (a) - dalpha), 
 					   y + diagonal * std::sin (rad (a) - dalpha));
 	
-	if (identificator == 0) {
-		for (qint32 i = 0; i < bounds.size (); i ++) {
-			//qreal x = bounds.at (i).x (), y = bounds.at (i).y ();
-			//std::cout << bounds.at (i).x () << " " << bounds.at (i).y () << " / ";
-		}
-		
-		//std::cout << std::endl;
-	}
-	
 	return bounds;
 }
 
@@ -209,7 +200,7 @@ void Dron::slotMove () {
 	qreal c  = std::cos (angle * Pi / 180), s  = std::sin (angle * Pi / 180);
 	
 	if (manual) {
-		speed = 4;
+		speed = 2;
 		qreal x = point.x (), y = point.y ();
 		
 		if (client->isActiveButton (Qt::Key_W)) {
@@ -284,6 +275,7 @@ void Dron::slotShot () {
 		
 		Bullet* bullet = new Bullet (point, angleToTarget, this);
 		bullet->setDrawClient (client);
+		bullet->id (identificator);
 		
 		client->makeShot (bullet);
 		shotTimeout = 0;

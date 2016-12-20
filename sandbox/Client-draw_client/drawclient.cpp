@@ -24,8 +24,8 @@ DrawClient::DrawClient (QWidget* parent) : QMainWindow (parent),
 	int w = scene->width ();
 	int h = scene->height ();
 	
-	scene->addLine(-w / 2, 0, w / 2, 0, QPen (Qt::black));
-	scene->addLine(0, -h / 2, 0, h / 2, QPen (Qt::black));
+	//scene->addLine(-w / 2, 0, w / 2, 0, QPen (Qt::black));
+	//scene->addLine(0, -h / 2, 0, h / 2, QPen (Qt::black));
 	
 	scene->addLine(-w / 2, -h / 2, w / 2, -h / 2, QPen (Qt::black));
 	scene->addLine(w / 2, -h / 2, w / 2, h / 2, QPen (Qt::black));

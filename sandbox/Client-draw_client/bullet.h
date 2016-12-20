@@ -15,6 +15,7 @@ class Bullet : public QObject, public QGraphicsItem {
 	public:
 		Bullet (QPointF start, qreal angle, QObject* parent = 0);
 		void setDrawClient    (DrawClient* client);
+		void id (qint32 id);
 		
 	public slots:
 		void slotMove ();
@@ -26,6 +27,7 @@ class Bullet : public QObject, public QGraphicsItem {
 					QWidget* widget);
 		
 	private:
+		qint32  identificator;
 		qint32	width, height;
 		qreal   diagonal;
 		qreal   speed;
@@ -34,9 +36,14 @@ class Bullet : public QObject, public QGraphicsItem {
 		QPointF point;
 		qreal   angle;
 		
-		qreal rad            (qreal angle);
-		bool  checkBoundsX   (qreal x);
-		bool  checkBoundsY   (qreal y);
+		qreal  rad            (qreal angle);
+		bool   checkBoundsX   (qreal x);
+		bool   checkBoundsY   (qreal y);
+		qint32 checkDrons     (qreal x, qreal y);
+		bool   checkObstacles (qreal x, qreal y);
+		
+		QPolygonF boundingPolygon ();
+		QPolygonF boundingPolygon (qreal x, qreal y, qreal a);
 		
 		DrawClient* client;
 		

@@ -25,6 +25,9 @@ class Dron : public QObject, public QGraphicsItem {
 		void   id (qint32 id);
 		qint32 id ();
 		
+		QPolygonF boundingPolygon ();
+		QPolygonF boundingPolygon (qreal x, qreal y, qreal a);
+		
 	public slots:
 		void slotMove ();
 		void slotTarget (QPointF target);
@@ -56,9 +59,6 @@ class Dron : public QObject, public QGraphicsItem {
 		bool checkBoundsY   (qreal y);
 		bool checkDrons     (qreal x, qreal y);
 		bool checkObstacles (qreal x, qreal y);
-		
-		QPolygonF boundingPolygon ();
-		QPolygonF boundingPolygon (qreal x, qreal y, qreal a);
 		
 		DrawClient* client;
 		
