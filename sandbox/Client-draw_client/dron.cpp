@@ -6,7 +6,7 @@ static const double Pi = 3.14159265358979323846264338327950288419717;
 Dron::Dron (QObject* parent) : QObject (parent),
 								QGraphicsItem () {
 	this->manual = false;
-	point  = QPointF (0, 0);
+	point  = QPointF (std::rand () % 100 * 1.0, std::rand () % 100 * 1.0);
 	
 	width = 40, height = 20;
 	awidth = 0, aheight = 0;
@@ -16,7 +16,7 @@ Dron::Dron (QObject* parent) : QObject (parent),
 	std::cout << "Diagonal: " << diagonal << std::endl;
 	
 	speed = 3;
-	angle = 30;
+	angle = std::rand () % 180;
 }
 
 Dron::~Dron () {}
@@ -86,13 +86,13 @@ bool Dron::checkBoundsY (qreal y) {
 }
 
 bool Dron::checkDrons (qreal x, qreal y) {
-	/*QVector <Dron *> drons = client->getDrons ();
+	QVector <Dron *> drons = client->getDrons ();
 	QPolygonF bounds = boundingPolygon (x, y, angle);
 	
 	for (qint32 i = 0; i < drons.size (); i ++) {
 		if (drons.at (i)->id () == identificator) { continue; }
 		if (!drons.at (i)->boundingPolygon ().intersected (bounds).isEmpty ()) { return false; }
-	}*/
+	}
 	
 	return true;
 }
@@ -102,9 +102,9 @@ bool Dron::checkObstacles (qreal x, qreal y) {
 	QPolygonF bounds = boundingPolygon (x, y, angle);
 	
 	for (qint32 i = 0; i < obstacles.size (); i ++) {
-		/*for (qint32 j = 0; j < bounds.size (); j ++) {
-			if (obstacles.at (i).containsPoint (bounds.at (j), Qt::WindingFill)) { return false; }
-		}*/
+		//for (qint32 j = 0; j < bounds.size (); j ++) {
+		//	if (obstacles.at (i).containsPoint (bounds.at (j), Qt::WindingFill)) { return false; }
+		//}
 		if (!obstacles.at (i).intersected (bounds).isEmpty ()) { return false; }
 	}
 	
@@ -154,6 +154,22 @@ void Dron::paint (QPainter* painter,
 	painter->setBrush (Qt::red);
 	painter->drawRect (rectangle);
 	
+	if (manual) {
+		QPolygon cabin;
+		cabin << QPoint (-5, 5) 
+			  << QPoint (-5, -5) 
+			  << QPoint (10, -5) 
+			  << QPoint (10, 5);
+		painter->setBrush (Qt::green);
+		painter->drawPolygon (cabin);
+		
+		QLine gun;
+		gun.setP1 (QPoint (25, 0));
+		gun.setP2 (QPoint (10, 0));
+		painter->setBrush (Qt::blue);
+		painter->drawLine (gun);
+	}
+	
 	/*QPolygonF bounds = boundingPolygon ();
 	painter->setBrush (Qt::green);
 	
@@ -175,14 +191,14 @@ void Dron::slotMove () {
 			x = point.x () + c * speed;
 			y = point.y () + s * speed;
 			
-			if (!checkDrons (x, y)) { x -= c * speed; y -= s * speed;}
-			if (!checkObstacles (x, y)) { x -= c * speed; y -= s * speed;}
+			if (!checkDrons (x, y)) { x -= c * speed; y -= s * speed; }
+			if (!checkObstacles (x, y)) { x -= c * speed; y -= s * speed; }
 		} else if (client->isActiveButton (Qt::Key_S)) {
 			x = point.x () - c * speed;
 			y = point.y () - s * speed;
 			
-			if (!checkDrons (x, y)) { x -= c * speed; y -= s * speed;}
-			if (!checkObstacles (x, y)) { x -= c * speed; y -= s * speed;}
+			//if (!checkDrons (x, y)) { x += c * speed; y += s * speed; }
+			if (!checkObstacles (x, y)) { x += c * speed; y += s * speed; }
 		}
 		
 		if (!checkBoundsX (x)) { x -= c * speed; }
@@ -211,6 +227,8 @@ void Dron::slotMove () {
 		if (!checkBoundsX (x)) { x -= c * speed; angle += 67; }
 		if (!checkBoundsY (y)) { y -= s * speed; angle += 67; }
 		if (angle > 180 || angle < -180) { normalizeAngle (); }
+		
+		if (!checkDrons (x, y)) { x -= c * speed; y -= s * speed; angle += 1; }
 		
 		//std::cout << "X: " << x << " " << diagX * c << std::endl;
 		//std::cout << "Y: " << y << " " << diagY * s << std::endl;

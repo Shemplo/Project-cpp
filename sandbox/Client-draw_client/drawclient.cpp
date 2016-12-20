@@ -52,17 +52,19 @@ DrawClient::DrawClient (QWidget* parent) : QMainWindow (parent),
 	drons.append (dron);
 	scene->addItem (dron);
 	
-	Dron* bot  = new Dron ();
-	connect (timer, &QTimer::timeout,
-			 bot, &Dron::slotMove);
-	
-	bot->setManualControl (!true);
-	bot->setRectangleArea (w, h);
-	bot->setDrawClient    (this);
-	bot->id (1);
-	
-	drons.append (bot);
-	scene->addItem (bot);
+	for (int i = 0; i < 3; i ++) {
+		Dron* bot  = new Dron ();
+		connect (timer, &QTimer::timeout,
+				 bot, &Dron::slotMove);
+		
+		bot->setManualControl (!true);
+		bot->setRectangleArea (w, h);
+		bot->setDrawClient    (this);
+		bot->id (i + 1);
+		
+		drons.append (bot);
+		scene->addItem (bot);
+	}
 	
 	timer->setInterval (1000 / 60);
 	timer->start ();
