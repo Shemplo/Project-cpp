@@ -9,6 +9,7 @@
 #include <QGraphicsItem>
 
 class DrawClient;
+class Bullet;
 
 class Dron : public QObject, public QGraphicsItem {
 		
@@ -27,11 +28,12 @@ class Dron : public QObject, public QGraphicsItem {
 	public slots:
 		void slotMove ();
 		void slotTarget (QPointF target);
+		void slotShot   ();
 		
 	protected:
 		QRectF boundingRect () const;
 		void paint (QPainter* painter,
-					const QStyleOptionGraphicsItem* option,\
+					const QStyleOptionGraphicsItem* option,
 					QWidget* widget);
 		
 	private:
@@ -39,6 +41,7 @@ class Dron : public QObject, public QGraphicsItem {
 		qint32  identificator;
 		qint32	width, height;
 		qint32	awidth, aheight;
+		qint32  shotTimeout;
 		qreal   diagonal;
 		qreal   speed;
 		

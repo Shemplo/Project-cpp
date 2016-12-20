@@ -38,7 +38,7 @@ DrawClient::DrawClient (QWidget* parent) : QMainWindow (parent),
 		  << QPoint (120, 20)
 		  << QPoint (50, 110);
 	obstacles.append (block);
-	scene->addPolygon (block);
+	scene->addPolygon (block, QPen (Qt::black), QBrush (Qt::darkGray));
 	
 	block.clear ();
 	block << QPoint (-230, -70) 
@@ -46,7 +46,7 @@ DrawClient::DrawClient (QWidget* parent) : QMainWindow (parent),
 		  << QPoint (-200, 80)
 		  << QPoint (-130, 30);
 	obstacles.append (block);
-	scene->addPolygon (block);
+	scene->addPolygon (block, QPen (Qt::black), QBrush (Qt::darkGray));
 	
 	block.clear ();
 	block << QPoint (-70, -150) 
@@ -54,11 +54,15 @@ DrawClient::DrawClient (QWidget* parent) : QMainWindow (parent),
 		  << QPoint (70, -90)
 		  << QPoint (10, -70);
 	obstacles.append (block);
-	scene->addPolygon (block);
+	scene->addPolygon (block, QPen (Qt::black), QBrush (Qt::darkGray));
 	
 	Dron* dron = new Dron ();
 	connect (timer, &QTimer::timeout,
 			 dron, &Dron::slotMove);
+	connect (scene, &GameScene::signalMove,
+			 dron, &Dron::slotTarget);
+	connect (scene, &GameScene::signalClick,
+			 dron, &Dron::slotShot);
 	
 	dron->setManualControl (true);
 	dron->setRectangleArea (w, h);
@@ -72,6 +76,8 @@ DrawClient::DrawClient (QWidget* parent) : QMainWindow (parent),
 		Dron* bot  = new Dron ();
 		connect (timer, &QTimer::timeout,
 				 bot, &Dron::slotMove);
+		connect (scene, &GameScene::signalMove,
+				 bot, &Dron::slotTarget);
 		
 		bot->setManualControl (!true);
 		bot->setRectangleArea (w, h);
@@ -98,10 +104,24 @@ QVector <QPolygonF> DrawClient::getObstacles () {
 	return obstacles;
 }
 
+qint32 DrawClient::getAreaWidth () {
+	return scene->width ();
+}
+
+qint32 DrawClient::getAreaHeight () {
+	return scene->height ();
+}
+
 void DrawClient::slotButton (int button, int action) {
 	buttons.setActive (button, action == 1);
 }
 
 bool DrawClient::isActiveButton (int button) {
 	return buttons.isAcive (button);
+}
+
+void DrawClient::makeShot (Bullet* bullet) {
+	connect (timer, &QTimer::timeout,
+			 bullet, &Bullet::slotMove);
+	scene->addItem (bullet);
 }

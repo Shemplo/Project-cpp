@@ -10,6 +10,7 @@
 
 #include <dron.h>
 #include <gamescene.h>
+#include <bullet.h>
 
 namespace Ui {
 	class DrawClient;
@@ -26,7 +27,11 @@ class DrawClient : public QMainWindow {
 		QVector <Dron *>    getDrons ();
 		QVector <QPolygonF> getObstacles ();
 		
+		qint32 getAreaWidth  ();
+		qint32 getAreaHeight ();
+		
 		bool isActiveButton (int button);
+		void makeShot (Bullet* bullet);
 		
 	private:
 		Ui::DrawClient*     ui;

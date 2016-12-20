@@ -18,10 +18,12 @@ win32-msvc* {
 SOURCES += main.cpp\
         drawclient.cpp \
     gamescene.cpp \
-    dron.cpp
+    dron.cpp \
+    bullet.cpp
 
 HEADERS  += drawclient.h \
     gamescene.h \
-    dron.h
+    dron.h \
+    bullet.h
 
 FORMS    += drawclient.ui

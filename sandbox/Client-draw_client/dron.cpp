@@ -1,4 +1,5 @@
 #include "dron.h"
+#include "bullet.h"
 #include "drawclient.h"
 
 static const double Pi = 3.14159265358979323846264338327950288419717;
@@ -6,13 +7,13 @@ static const double Pi = 3.14159265358979323846264338327950288419717;
 Dron::Dron (QObject* parent) : QObject (parent),
 								QGraphicsItem () {
 	this->manual = false;
-	point  = QPointF (std::rand () % 150 - 75.0, std::rand () % 100 - 50.0);
-	
 	width = 40, height = 20;
 	awidth = 0, aheight = 0;
+	shotTimeout = 0;
 	
-	bounds = QRectF   (-width / 2, -height / 2, width, height);
-	diagonal = ::sqrt (width * width + height * height) / 2;
+	point  = QPointF (std::rand () % 150 - 75.0, std::rand () % 100 - 50.0);
+	bounds = QRectF (-(width + 10) / 2, -(height + 10) / 2, width + 20, height + 20);
+	diagonal = std::sqrt (width * width + height * height) / 2;
 	std::cout << "Diagonal: " << diagonal << std::endl;
 	
 	speed = 3;
@@ -54,7 +55,7 @@ void Dron::normalizeAngle () {
 }
 
 bool Dron::checkBoundsX (qreal x) {
-	qreal dalpha = ::atan ((double) height / (double) width) / 2;
+	qreal dalpha = std::atan ((double) height / (double) width) / 2;
 	
 	if (angle >= -180 && angle < -90) {
 		if (std::abs (x + (diagonal + 1) * std::cos (rad (angle) - dalpha)) > awidth / 2) { return false; }
@@ -151,23 +152,47 @@ void Dron::paint (QPainter* painter,
 	rectangle.setY (-height / 2);
 	rectangle.setWidth (width);
 	rectangle.setHeight (height);
-	painter->setBrush (Qt::red);
+	painter->setBrush (Qt::gray);
 	painter->drawRect (rectangle);
 	
+	QPolygon tank;
+	tank << QPoint (-7, 8) 
+		 << QPoint (-7, 4) 
+		 << QPoint (-17, 4)
+		 << QPoint (-17, 8);
+	painter->setBrush (Qt::darkGray);
+	painter->drawPolygon (tank);
+	
+	tank.clear ();
+	tank << QPoint (-7, -8) 
+		 << QPoint (-7, -4) 
+		 << QPoint (-17, -4)
+		 << QPoint (-17, -8);
+	painter->setBrush (Qt::darkGray);
+	painter->drawPolygon (tank);
+	
 	if (manual) {
+		QLineF toTarget (QPointF (point.x (), point.y ()), target);
+		qreal angleToTarget = -toTarget.angle ();
+		
+		if (std::abs (angleToTarget - angle) >= 0) { painter->rotate (angleToTarget - angle); } 
+		else                                       { painter->rotate (angle - angleToTarget); }
+		
 		QPolygon cabin;
 		cabin << QPoint (-5, 5) 
 			  << QPoint (-5, -5) 
 			  << QPoint (10, -5) 
 			  << QPoint (10, 5);
-		painter->setBrush (Qt::green);
+		painter->setBrush (Qt::darkGray);
 		painter->drawPolygon (cabin);
 		
 		QLine gun;
-		gun.setP1 (QPoint (25, 0));
+		gun.setP1 (QPoint (20, 0));
 		gun.setP2 (QPoint (10, 0));
-		painter->setBrush (Qt::blue);
+		painter->setPen (QPen (QBrush (Qt::black), 2));
 		painter->drawLine (gun);
+		
+		painter->rotate (0);
 	}
 	
 	/*QPolygonF bounds = boundingPolygon ();
@@ -181,7 +206,7 @@ void Dron::paint (QPainter* painter,
 
 void Dron::slotMove () {
 	//qreal dalpha = ::atan ((double) height / (double) width) / 2;
-	qreal c  = ::cos (angle * Pi / 180), s  = ::sin (angle * Pi / 180);
+	qreal c  = std::cos (angle * Pi / 180), s  = std::sin (angle * Pi / 180);
 	
 	if (manual) {
 		speed = 4;
@@ -223,12 +248,15 @@ void Dron::slotMove () {
 		qreal x = point.x () + c * speed;
 		qreal y = point.y () + s * speed;
 		
-		if (!checkObstacles (x, y)) { x -= c * speed; y -= s * speed; angle += 67; }
-		if (!checkBoundsX (x)) { x -= c * speed; angle += 67; }
+		if (!checkObstacles (x, y + s * speed)) { x -= c * speed; angle += 9; }
+		if (!checkObstacles (x + c * speed, y)) { y -= s * speed; angle += 7; }
+		
+		if (!checkDrons (x, y + s * speed)) { x -= c * speed; angle += 9; }
+		if (!checkDrons (x + c * speed, y)) { y -= s * speed; angle += 7; }
+		
+		if (!checkBoundsX (x)) { x -= c * speed; angle += 69; }
 		if (!checkBoundsY (y)) { y -= s * speed; angle += 67; }
 		if (angle > 180 || angle < -180) { normalizeAngle (); }
-		
-		if (!checkDrons (x, y)) { x -= c * speed; y -= s * speed; angle += 2; }
 		
 		//std::cout << "X: " << x << " " << diagX * c << std::endl;
 		//std::cout << "Y: " << y << " " << diagY * s << std::endl;
@@ -240,8 +268,24 @@ void Dron::slotMove () {
 	this->setPos (point);
 	setRotation (angle);
 	//std::cout << "Tick!" << std::endl;
+	
+	//Special update
+	shotTimeout += shotTimeout < 128 ? 1 : 0;
 }
 
 void Dron::slotTarget (QPointF target) {
 	this->target = target;
+}
+
+void Dron::slotShot () {
+	if (shotTimeout >= 32) {
+		QLineF toTarget (QPointF (point.x (), point.y ()), target);
+		qreal angleToTarget = - toTarget.angle ();
+		
+		Bullet* bullet = new Bullet (point, angleToTarget, this);
+		bullet->setDrawClient (client);
+		
+		client->makeShot (bullet);
+		shotTimeout = 0;
+	}
 }
