@@ -6,7 +6,7 @@ static const double Pi = 3.14159265358979323846264338327950288419717;
 Dron::Dron (QObject* parent) : QObject (parent),
 								QGraphicsItem () {
 	this->manual = false;
-	point  = QPointF (std::rand () % 100 * 1.0, std::rand () % 100 * 1.0);
+	point  = QPointF (std::rand () % 150 - 75.0, std::rand () % 100 - 50.0);
 	
 	width = 40, height = 20;
 	awidth = 0, aheight = 0;
@@ -57,29 +57,29 @@ bool Dron::checkBoundsX (qreal x) {
 	qreal dalpha = ::atan ((double) height / (double) width) / 2;
 	
 	if (angle >= -180 && angle < -90) {
-		if (::abs (x + (diagonal + 1) * ::cos (rad (angle) - dalpha)) > awidth / 2) { return false; }
+		if (std::abs (x + (diagonal + 1) * std::cos (rad (angle) - dalpha)) > awidth / 2) { return false; }
 	} else if (angle >= -90 && angle < 0) {
-		if (::abs (x + (diagonal + 1) * ::cos (rad (angle) + dalpha)) > awidth / 2) { return false; }
+		if (std::abs (x + (diagonal + 1) * std::cos (rad (angle) + dalpha)) > awidth / 2) { return false; }
 	} else if (angle >= 0 && angle < 90) {
-		if (::abs (x + (diagonal + 1) * ::cos (rad (angle) - dalpha)) > awidth / 2) { return false; }
+		if (std::abs (x + (diagonal + 1) * std::cos (rad (angle) - dalpha)) > awidth / 2) { return false; }
 	} else if (angle >= 90 && angle <= 180) {
-		if (::abs (x + (diagonal + 1) * ::cos (rad (angle) + dalpha)) > awidth / 2) { return false; }
+		if (std::abs (x + (diagonal + 1) * std::cos (rad (angle) + dalpha)) > awidth / 2) { return false; }
 	}
 	
 	return true;
 }
 
 bool Dron::checkBoundsY (qreal y) {
-	qreal dalpha = ::atan ((double) height / (double) width) / 2;
+	qreal dalpha = std::atan ((double) height / (double) width) / 2;
 	
 	if (angle >= -180 && angle < -90) {
-		if (::abs (y + (diagonal + 1) * ::sin (rad (angle) + dalpha)) > aheight / 2) { return false; }
+		if (std::abs (y + (diagonal + 1) * std::sin (rad (angle) + dalpha)) > aheight / 2) { return false; }
 	} else if (angle >= -90 && angle < 0) {
-		if (::abs (y + (diagonal + 1) * ::sin (rad (angle) - dalpha)) > aheight / 2) { return false; }
+		if (std::abs (y + (diagonal + 1) * std::sin (rad (angle) - dalpha)) > aheight / 2) { return false; }
 	} else if (angle >= 0 && angle < 90) {
-		if (::abs (y + (diagonal + 1) * ::sin (rad (angle) + dalpha)) > aheight / 2) { return false; }
+		if (std::abs (y + (diagonal + 1) * std::sin (rad (angle) + dalpha)) > aheight / 2) { return false; }
 	} else if (angle >= 90 && angle <= 180) {
-		if (::abs (y + (diagonal + 1) * ::sin (rad (angle) - dalpha)) > aheight / 2) { return false; }
+		if (std::abs (y + (diagonal + 1) * std::sin (rad (angle) - dalpha)) > aheight / 2) { return false; }
 	}
 	
 	return true;
@@ -119,14 +119,14 @@ QPolygonF Dron::boundingPolygon (qreal x, qreal y, qreal a) {
 	qreal dalpha = ::atan ((double) height / (double) width) / 2;
 	
 	QPolygonF bounds;
-	bounds << QPointF (x + diagonal * ::cos (rad (a) + dalpha), 
-					   y - diagonal * ::sin (rad (a) + dalpha));
-	bounds << QPointF (x + diagonal * ::cos (rad (a) - dalpha), 
-					   y - diagonal * ::sin (rad (a) - dalpha));
-	bounds << QPointF (x - diagonal * ::cos (rad (a) + dalpha), 
-					   y + diagonal * ::sin (rad (a) + dalpha));
-	bounds << QPointF (x - diagonal * ::cos (rad (a) - dalpha), 
-					   y + diagonal * ::sin (rad (a) - dalpha));
+	bounds << QPointF (x + diagonal * std::cos (rad (a) + dalpha), 
+					   y - diagonal * std::sin (rad (a) + dalpha));
+	bounds << QPointF (x + diagonal * std::cos (rad (a) - dalpha), 
+					   y - diagonal * std::sin (rad (a) - dalpha));
+	bounds << QPointF (x - diagonal * std::cos (rad (a) + dalpha), 
+					   y + diagonal * std::sin (rad (a) + dalpha));
+	bounds << QPointF (x - diagonal * std::cos (rad (a) - dalpha), 
+					   y + diagonal * std::sin (rad (a) - dalpha));
 	
 	if (identificator == 0) {
 		for (qint32 i = 0; i < bounds.size (); i ++) {
@@ -228,7 +228,7 @@ void Dron::slotMove () {
 		if (!checkBoundsY (y)) { y -= s * speed; angle += 67; }
 		if (angle > 180 || angle < -180) { normalizeAngle (); }
 		
-		if (!checkDrons (x, y)) { x -= c * speed; y -= s * speed; angle += 1; }
+		if (!checkDrons (x, y)) { x -= c * speed; y -= s * speed; angle += 2; }
 		
 		//std::cout << "X: " << x << " " << diagX * c << std::endl;
 		//std::cout << "Y: " << y << " " << diagY * s << std::endl;
@@ -240,4 +240,8 @@ void Dron::slotMove () {
 	this->setPos (point);
 	setRotation (angle);
 	//std::cout << "Tick!" << std::endl;
+}
+
+void Dron::slotTarget (QPointF target) {
+	this->target = target;
 }

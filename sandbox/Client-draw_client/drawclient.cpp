@@ -40,6 +40,22 @@ DrawClient::DrawClient (QWidget* parent) : QMainWindow (parent),
 	obstacles.append (block);
 	scene->addPolygon (block);
 	
+	block.clear ();
+	block << QPoint (-230, -70) 
+		  << QPoint (-250, -20) 
+		  << QPoint (-200, 80)
+		  << QPoint (-130, 30);
+	obstacles.append (block);
+	scene->addPolygon (block);
+	
+	block.clear ();
+	block << QPoint (-70, -150) 
+		  << QPoint (-50, -210) 
+		  << QPoint (70, -90)
+		  << QPoint (10, -70);
+	obstacles.append (block);
+	scene->addPolygon (block);
+	
 	Dron* dron = new Dron ();
 	connect (timer, &QTimer::timeout,
 			 dron, &Dron::slotMove);

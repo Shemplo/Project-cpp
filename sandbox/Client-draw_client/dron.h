@@ -26,6 +26,7 @@ class Dron : public QObject, public QGraphicsItem {
 		
 	public slots:
 		void slotMove ();
+		void slotTarget (QPointF target);
 		
 	protected:
 		QRectF boundingRect () const;
@@ -43,6 +44,7 @@ class Dron : public QObject, public QGraphicsItem {
 		
 		QRectF  bounds;
 		QPointF point;
+		QPointF target;
 		qreal   angle;
 		
 		qreal rad (qreal angle);
