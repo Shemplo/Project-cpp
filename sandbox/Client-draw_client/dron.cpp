@@ -171,13 +171,13 @@ void Dron::slotMove () {
 		speed = 4;
 		qreal x = point.x (), y = point.y ();
 		
-		if (GetAsyncKeyState ('W')) {
+		if (client->isActiveButton (Qt::Key_W)) {
 			x = point.x () + c * speed;
 			y = point.y () + s * speed;
 			
 			if (!checkDrons (x, y)) { x -= c * speed; y -= s * speed;}
 			if (!checkObstacles (x, y)) { x -= c * speed; y -= s * speed;}
-		} else if (GetAsyncKeyState ('S')) {
+		} else if (client->isActiveButton (Qt::Key_S)) {
 			x = point.x () - c * speed;
 			y = point.y () - s * speed;
 			
@@ -191,13 +191,13 @@ void Dron::slotMove () {
 		point.setX (x);
 		point.setY (y);
 		
-		if (GetAsyncKeyState ('A') || GetAsyncKeyState ('D')) {
+		if (client->isActiveButton (Qt::Key_A) || client->isActiveButton (Qt::Key_D)) {
 			qreal x = point.x ();
 			qreal y = point.y ();
 			qreal prev = angle;
 			
-			if (GetAsyncKeyState ('A')) { angle -= 2; }
-			else                        { angle += 2; }
+			if (client->isActiveButton (Qt::Key_A)) { angle -= 2; }
+			else                                    { angle += 2; }
 			if (angle > 180 || angle < -180) { normalizeAngle (); }
 			
 			if (!checkBoundsX (x)) { angle = prev; }

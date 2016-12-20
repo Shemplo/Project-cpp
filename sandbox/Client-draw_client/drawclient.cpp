@@ -18,6 +18,9 @@ DrawClient::DrawClient (QWidget* parent) : QMainWindow (parent),
 	ui->canvas->setVerticalScrollBarPolicy   (Qt::ScrollBarAlwaysOff);
 	ui->canvas->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
 	
+	connect (scene, &GameScene::signalButton,
+			 this, &DrawClient::slotButton);
+	
 	int w = scene->width ();
 	int h = scene->height ();
 	
@@ -75,4 +78,12 @@ QVector <Dron *> DrawClient::getDrons () {
 
 QVector <QPolygonF> DrawClient::getObstacles () {
 	return obstacles;
+}
+
+void DrawClient::slotButton (int button, int action) {
+	buttons.setActive (button, action == 1);
+}
+
+bool DrawClient::isActiveButton (int button) {
+	return buttons.isAcive (button);
 }

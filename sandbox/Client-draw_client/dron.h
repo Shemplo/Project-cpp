@@ -2,7 +2,6 @@
 #define DRON_H
 
 #include <iostream>
-#include <windows.h>
 
 #include <QObject>
 #include <QVector>
