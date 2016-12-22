@@ -27,24 +27,38 @@ void Application::connectHost (QString host, qint32 port) {
 }
 
 void Application::disconnectHost () {
-	std::cout << "dis" << std::endl;
+	std::cout << "[CLIENT] Disconnects from host" 
+			  << std::endl;
+	socket->close ();
 }
 
 void Application::slotReadStream () {
 	while (socket->bytesAvailable () > 0) {
 		bufferArray.append (socket->readAll ());
 		
-		if (bufferArray.size () >= sizeof (qint32) && need == 0) {
+		while (bufferArray.size () >= sizeof (qint32) && need == 0) {
 			QDataStream input (&bufferArray, QIODevice::ReadOnly);
 			/*Reading size of input data line*/ input >> need;
 			bufferArray.remove (0, sizeof (qint32));
+			
+			if (bufferArray.size () >= need && need != 0) {
+				emit signalReceivedData (bufferArray.left (need));
+				bufferArray.remove (0, need);
+				need = 0;
+			}
 		}
 		
-		if (bufferArray.size () >= need && need != 0) {
-			emit signalReceivedData (bufferArray.left (need));
-			bufferArray.remove (0, need);
-			need = 0;
-		}
+		//if (bufferArray.size () >= sizeof (qint32) && need == 0) {
+		//	QDataStream input (&bufferArray, QIODevice::ReadOnly);
+		//	/*Reading size of input data line*/ input >> need;
+		//	bufferArray.remove (0, sizeof (qint32));
+		//}
+		
+		//if (bufferArray.size () >= need && need != 0) {
+		//	emit signalReceivedData (bufferArray.left (need));
+		//	bufferArray.remove (0, need);
+		//	need = 0;
+		//}
 	}
 }
 

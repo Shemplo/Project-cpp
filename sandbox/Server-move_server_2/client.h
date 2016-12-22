@@ -5,6 +5,8 @@
 #include <QTcpSocket>
 #include <QDataStream>
 
+#include <machineinfo.h>
+
 class Server;
 
 class Client : public QObject {
@@ -30,7 +32,13 @@ class Client : public QObject {
 		qint32 status = 0;
 		qint32 identf = 0;
 		
+		MachineInfo machineInfo;
+		QVector <qint32> machines;
 		qint32 selectedMachine = 0;
+		
+		qint32 credits    = 100;
+		qint32 bonuses    = 0;
+		qint32 experience = 0;
 		
 		Server*     server;
 		QTcpSocket* socket;
@@ -39,6 +47,8 @@ class Client : public QObject {
 		QByteArray bufferArray;
 		
 		void parseInputStream (QByteArray data);
+		void sendMachineInfo  (qint32 id);
+		void sendBalanceInfo  ();
 		
 };
 

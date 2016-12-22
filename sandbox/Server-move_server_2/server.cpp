@@ -58,7 +58,7 @@ qint32 Server::nextId () {
 		//Generated id
 		id = 0;
 		
-		for (int i = 0; i < 8; i ++) {
+		for (int i = 0; i < 6; i ++) {
 			id = id * 10 + (std::rand () % 9 + 1);
 		}
 		
@@ -90,6 +90,9 @@ void Server::slotNewConnection () {
 
 void Server::slotPulse () {
 	std::cout << "[INFO] Server information: " << std::endl 
-			  << "         Active connections: " << connects.size () << std::endl
-			  << "         Server listening port: " << server->serverPort () << std::endl;
+			  << "         Active connections:    " << connects.size () << std::endl
+			  << "         Server listening port: " << server->serverPort () << std::endl
+			  << "         Server date and time:  " << QDateTime::currentDateTime ().
+														toString ("dd.MM.yyyy hh:mm:ss").
+														toStdString () << std::endl;
 }

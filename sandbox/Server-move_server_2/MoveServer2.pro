@@ -12,8 +12,10 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     client.cpp \
-    server.cpp
+    server.cpp \
+    machineinfo.cpp
 
 HEADERS += \
     client.h \
-    server.h
+    server.h \
+    machineinfo.h

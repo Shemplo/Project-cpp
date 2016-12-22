@@ -44,6 +44,7 @@ class Application : public QMainWindow {
 		
 		qint32 need = 0;
 		QByteArray bufferArray;
+		
 };
 
 #endif // APPLICATIONWINDOW_H

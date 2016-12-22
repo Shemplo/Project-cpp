@@ -3,6 +3,7 @@
 
 #include <Qtimer>
 #include <QWidget>
+#include <QDateTime>
 
 class Application;
 
@@ -31,17 +32,29 @@ class UserForm : public QWidget {
 	private slots:
 		void slotButtonConnect ();
 		void slotButtonExit ();
+		void slotButtonPrev ();
+		void slotButtonNext ();
 		
 		void slotReconnect ();
 		void slotReceivedData (QByteArray data);
 		
+		void slotPing ();
+		
 	private:
 		Ui::UserForm* ui;
 		Application* app;
+		qint32 identif = 0;
 		
 		QTimer* reconnect;
+		QTimer* ping;
+		
+		qint64 pingStarted;
+		qint64 pingFinifhed;
+		qint64 pingValue;
+		bool tracingPing = false;
 		
 		struct Machine {
+			qint32 id;
 			QString name;
 			
 			qreal health, armor;
@@ -51,6 +64,12 @@ class UserForm : public QWidget {
 		};
 		
 		Machine machine;
+		qint32 numberOfMachines = 0;
+		qint32 numberOfMachine  = 0;
+		
+		qint32 credits    = 0;
+		qint32 bonuses    = 0;
+		qint32 experience = 0;
 		
 };
 
