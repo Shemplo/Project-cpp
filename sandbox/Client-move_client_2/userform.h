@@ -31,9 +31,10 @@ class UserForm : public QWidget {
 		
 	private slots:
 		void slotButtonConnect ();
-		void slotButtonExit ();
-		void slotButtonPrev ();
-		void slotButtonNext ();
+		void slotButtonExit    ();
+		void slotButtonPrev    ();
+		void slotButtonNext    ();
+		void slotButtonBattle  ();
 		
 		void slotReconnect ();
 		void slotReceivedData (QByteArray data);

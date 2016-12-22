@@ -7,26 +7,51 @@
     <x>0</x>
     <y>0</y>
     <width>338</width>
-    <height>415</height>
+    <height>417</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Paner assault</string>
   </property>
   <property name="styleSheet">
    <string notr="true">font-family: &quot;Yu Gothic&quot;;</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="title">
-     <property name="styleSheet">
-      <string notr="true">font-family: &quot;Yu Gothic&quot;;
-font-size: 20pt;</string>
-     </property>
-     <property name="text">
-      <string>Panzer assault</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="titleLine">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap resource="icons.qrc">:/tank.png</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="title">
+       <property name="styleSheet">
+        <string notr="true">font-size: 20pt;</string>
+       </property>
+       <property name="text">
+        <string>Panzer assault</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="serverInfoLine">
@@ -143,7 +168,7 @@ font-size: 20pt;</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>1888</string>
+          <string>-</string>
          </property>
         </widget>
        </item>
@@ -163,7 +188,7 @@ font-size: 20pt;</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>252</string>
+          <string>-</string>
          </property>
         </widget>
        </item>
@@ -183,7 +208,7 @@ font-size: 20pt;</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>23</string>
+          <string>-</string>
          </property>
         </widget>
        </item>
@@ -192,11 +217,10 @@ font-size: 20pt;</string>
      <item>
       <widget class="QLabel" name="timeUser">
        <property name="styleSheet">
-        <string notr="true">font-family: &quot;Yu Gothic&quot;;
-font-size: 15pt</string>
+        <string notr="true">font-size: 15pt</string>
        </property>
        <property name="text">
-        <string>21:52</string>
+        <string>00:00</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -239,7 +263,7 @@ font-size: 15pt</string>
         <string notr="true">font-size: 9pt; font-weight: bold;</string>
        </property>
        <property name="text">
-        <string>MS-1</string>
+        <string>-</string>
        </property>
       </widget>
      </item>
@@ -282,7 +306,7 @@ font-size: 15pt</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>200</string>
+          <string>-</string>
          </property>
         </widget>
        </item>
@@ -302,7 +326,7 @@ font-size: 15pt</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>4</string>
+          <string>-</string>
          </property>
         </widget>
        </item>
@@ -322,7 +346,7 @@ font-size: 15pt</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>2</string>
+          <string>-</string>
          </property>
         </widget>
        </item>
@@ -342,7 +366,7 @@ font-size: 15pt</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>20</string>
+          <string>-</string>
          </property>
         </widget>
        </item>
@@ -352,7 +376,7 @@ font-size: 15pt</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>Attack speed:</string>
+          <string>Cooldown time:</string>
          </property>
         </widget>
        </item>
@@ -362,7 +386,7 @@ font-size: 15pt</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>18.4</string>
+          <string>-</string>
          </property>
         </widget>
        </item>
@@ -382,7 +406,7 @@ font-size: 15pt</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>24</string>
+          <string>-</string>
          </property>
         </widget>
        </item>
@@ -402,7 +426,7 @@ font-size: 15pt</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>17</string>
+          <string>-</string>
          </property>
         </widget>
        </item>
@@ -422,7 +446,7 @@ font-size: 15pt</string>
           <string notr="true">font-size: 9pt;</string>
          </property>
          <property name="text">
-          <string>36</string>
+          <string>-</string>
          </property>
         </widget>
        </item>
@@ -460,6 +484,8 @@ font-size: 15pt</string>
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

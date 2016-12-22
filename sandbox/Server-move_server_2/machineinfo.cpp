@@ -4,6 +4,7 @@ MachineInfo::MachineInfo () {
 	Machine ms1;
 	ms1.name   = "MS-1";
 	ms1.id     = 1;
+	ms1.level  = 1;
 	ms1.health = 140;
 	ms1.armor  = 14;
 	ms1.speed  = 4;
@@ -15,8 +16,9 @@ MachineInfo::MachineInfo () {
 	machines.insert (ms1.id, ms1);
 	
 	Machine t1;
-	t1.name = "T-1";
-	t1.id   = 2;
+	t1.name   = "T-1";
+	t1.id     = 2;
+	t1.level  = 1;
 	t1.health = 150;
 	t1.armor  = 7;
 	t1.speed  = 3;

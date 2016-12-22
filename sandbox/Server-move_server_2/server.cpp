@@ -43,11 +43,63 @@ void Server::stop (qint32 code) {
 void Server::removeClient (Client* client) {
 	std::cout << "[CLIENT] Disconnecting #" 
 			  << client->getId () << " ..." << std::endl;
+	leaveQueue (client->getId ());
+	
 	qint32 index = connects.indexOf (client);
 	if (index != -1) { connects.remove (index); }
 	
 	std::cout << "[CLIENT] Client #" << client->getId () 
 			  << " disconnected from server" << std::endl;
+}
+
+void Server::joinToBattle (qint32 identif) {
+	qint32 index = queue.indexOf (identif);
+	if (index != -1) { return; }
+	
+	for (qint32 i = 0; i < queue.size (); i ++) {
+		qint32 identif = queue.at (i);
+		
+		for (qint32 j = 0; j < connects.size (); j ++) {
+			if (connects.at (j)->getId () == identif) {
+				QByteArray write;
+				QDataStream output (&write, QIODevice::WriteOnly);
+				QString command = "queue"; output << command;
+				QString target  = "users"; output << target;
+				
+				output << queueSize () + 1;
+				
+				connects.at (j)->writeInSocket (write);
+			}
+		}
+	}
+	
+	queue.append (identif);
+}
+
+void Server::leaveQueue (qint32 identif) {
+	qint32 index = queue.indexOf (identif);
+	if (index != -1) { queue.remove (index); }
+	
+	for (qint32 i = 0; i < queue.size (); i ++) {
+		qint32 identif = queue.at (i);
+		
+		for (qint32 j = 0; j < connects.size (); j ++) {
+			if (connects.at (j)->getId () == identif) {
+				QByteArray write;
+				QDataStream output (&write, QIODevice::WriteOnly);
+				QString command = "queue"; output << command;
+				QString target  = "users"; output << target;
+				
+				output << queueSize ();
+				
+				connects.at (j)->writeInSocket (write);
+			}
+		}
+	}
+}
+
+qint32 Server::queueSize () {
+	return queue.size ();
 }
 
 qint32 Server::nextId () {
@@ -90,7 +142,8 @@ void Server::slotNewConnection () {
 
 void Server::slotPulse () {
 	std::cout << "[INFO] Server information: " << std::endl 
-			  << "         Active connections:    " << connects.size () << std::endl
+			  << "         Active connections:    " << connects.size () << std::endl 
+			  << "         Players in queue:      " << queue.size () << std::endl
 			  << "         Server listening port: " << server->serverPort () << std::endl
 			  << "         Server date and time:  " << QDateTime::currentDateTime ().
 														toString ("dd.MM.yyyy hh:mm:ss").

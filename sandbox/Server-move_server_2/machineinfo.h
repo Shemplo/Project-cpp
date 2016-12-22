@@ -9,7 +9,8 @@ class MachineInfo {
 		explicit MachineInfo ();
 		
 		struct Machine {
-			qint32 id = 0;
+			qint32 id    = 0;
+			qint32 level = 0;
 			QString name;
 			
 			qreal health = 0, armor    = 0;

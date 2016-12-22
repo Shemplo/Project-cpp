@@ -23,6 +23,10 @@ class Server : public QObject {
 		void stop  (qint32 code);
 		
 		void removeClient (Client* client);
+		void joinToBattle (qint32 identif);
+		void leaveQueue   (qint32 identif);
+		
+		qint32 queueSize  ();
 		
 	public slots:
 		void slotNewConnection ();
@@ -33,6 +37,7 @@ class Server : public QObject {
 		
 		QTcpServer*       server;
 		QVector <Client*> connects;
+		QVector <qint32>  queue;
 		
 		QTimer* pulse;
 		

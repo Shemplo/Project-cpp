@@ -16,12 +16,18 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
     userform.cpp \
-    application.cpp
+    application.cpp \
+    queueform.cpp
 
 HEADERS  += \
     userform.h \
-    application.h
+    application.h \
+    queueform.h
 
 FORMS    += \
     userform.ui \
-    application.ui
+    application.ui \
+    queueform.ui
+
+RESOURCES += \
+    icons.qrc

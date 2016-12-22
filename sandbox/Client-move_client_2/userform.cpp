@@ -17,12 +17,18 @@ UserForm::UserForm (Application* app) : QWidget (app),
 			this, &UserForm::slotButtonPrev);
 	connect (ui->buttonNext, &QPushButton::clicked,
 			 this, &UserForm::slotButtonNext);
+	connect (ui->buttonBattle, &QPushButton::clicked,
+			 this, &UserForm::slotButtonBattle);
 	
 	reconnect = new QTimer ();
 	ping      = new QTimer ();
 	
 	connect (reconnect, &QTimer::timeout,
 			 this, &UserForm::slotReconnect);
+	
+	if (app->isConnected ()) {
+		slotConnected ();
+	}
 }
 
 void UserForm::setDefault () {
@@ -109,6 +115,8 @@ void UserForm::updateData (QString target) {
 }
 
 void UserForm::slotConnected () {
+	ui->buttonConnect->setEnabled (false);
+	
 	ui->statusNow->setText ("online");
 	ui->statusNow->setStyleSheet ("QLabel { color: green; }");
 	
@@ -135,6 +143,8 @@ void UserForm::slotConnected () {
 }
 
 void UserForm::slotDisconnected () {
+	ui->buttonConnect->setEnabled (true);
+	
 	ping->stop ();
 	pingValue = 0;
 	
@@ -201,6 +211,12 @@ void UserForm::slotReceivedData (QByteArray data) {
 			
 			updateData ("balance");
 		}
+	} else if (command == "battle") {
+		QString target; input >> target;
+		
+		if (target == "joined_queue") {
+			emit signalSwitchForm (2);
+		}
 	}
 }
 
@@ -256,6 +272,18 @@ void UserForm::slotButtonNext () {
 	QDataStream output (&ask, QIODevice::WriteOnly);
 	QString command = "next";    output << command;
 	QString target  = "machine"; output << target;
+	
+	app->writeInSocket (ask);
+}
+
+void UserForm::slotButtonBattle () {
+	std::cout << "[CLIENT] Join to queue to battle" 
+			  << std::endl;
+	
+	QByteArray ask;
+	QDataStream output (&ask, QIODevice::WriteOnly);
+	QString command = "battle";     output << command;
+	QString target  = "join_queue"; output << target;
 	
 	app->writeInSocket (ask);
 }

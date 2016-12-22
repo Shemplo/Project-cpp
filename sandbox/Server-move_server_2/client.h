@@ -16,6 +16,8 @@ class Client : public QObject {
 	public:
 		explicit Client (QTcpSocket* socket, qint32 id, Server* server);
 		
+		void writeInSocket (QByteArray data);
+		
 		qint32 getId ();
 		
 	private slots:

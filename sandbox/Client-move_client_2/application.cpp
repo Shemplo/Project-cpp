@@ -3,11 +3,15 @@
 
 Application::Application (QWidget *parent) : QMainWindow (parent),
 												ui (new Ui::Application) {
+	QMainWindow::setWindowFlags (Qt::CustomizeWindowHint);
+	
 	this->socket = new QTcpSocket (this);
 	this->connected = false;
 	
 	ui->setupUi (this);
 	slotSwitchForm (1);
+	
+	
 }
 
 void Application::connectHost (QString host, qint32 port) {
@@ -108,6 +112,18 @@ void Application::slotSwitchForm (int form) {
 				 widget, &UserForm::slotConnected);
 		connect (socket, &QTcpSocket::disconnected,
 				 widget, &UserForm::slotDisconnected);
+	} else if (form == 2) {
+		QueueForm* widget = new QueueForm (this);
+		
+		ui->centralWidget->setStyle (widget->style ());
+		this->setFixedSize (widget->size ());
+		ui->centralWidget = widget;
+		ui->centralWidget->show ();
+		
+		connect (widget, &QueueForm::signalSwitchForm,
+				 this, &Application::slotSwitchForm);
+		connect (socket, &QTcpSocket::disconnected,
+				 widget, &QueueForm::slotDisconnected);
 	}
 }
 

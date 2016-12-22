@@ -18,6 +18,15 @@ Client::Client (QTcpSocket* socket, qint32 id, Server* server) : QObject (server
 	machines.append (2);
 }
 
+void Client::writeInSocket (QByteArray data) {
+	QByteArray length;
+	QDataStream lenout (&length, QIODevice::WriteOnly);
+	lenout << data.size ();
+	
+	socket->write (length);
+	socket->write (data);
+}
+
 qint32 Client::getId () {
 	return this->identf;
 }
@@ -120,6 +129,63 @@ void Client::parseInputStream (QByteArray data) {
 					  << this->selectedMachine << std::endl;
 			
 			sendMachineInfo (selectedMachine);
+		}
+	} else if (command == "battle") {
+		QString target; input >> target;
+		
+		if (target == "join_queue") {
+			std::cout << "[SERVER] Client #" << identf 
+					  << " joined queue" << std::endl;
+			server->joinToBattle (this->identf);
+			status = 1;
+			
+			QByteArray pong, length;
+			QDataStream output (&pong, QIODevice::WriteOnly);
+			output << QString ("battle");
+			output << QString ("joined_queue");
+			
+			QDataStream lenout (&length, QIODevice::WriteOnly);
+			lenout << pong.size ();
+			
+			socket->write (length);
+			socket->write (pong);
+		}
+	} else if (command == "queue") {
+		QString target; input >> target;
+		
+		if (target == "info") {
+			QByteArray pong, length;
+			QDataStream output (&pong, QIODevice::WriteOnly);
+			output << QString ("queue");
+			output << QString ("info");
+			
+			MInfo machine = machineInfo.getInfo (machines.at (selectedMachine));
+			
+			output << server->queueSize ();
+			output << machine.id;
+			output << machine.level;
+			output << machine.name;
+			
+			QDataStream lenout (&length, QIODevice::WriteOnly);
+			lenout << pong.size ();
+			
+			socket->write (length);
+			socket->write (pong);
+		} else if (target == "leave") {
+			std::cout << "[SERVER] Client #" << identf 
+					  << " leaved queue" << std::endl;
+			server->leaveQueue (identf);
+			
+			QByteArray pong, length;
+			QDataStream output (&pong, QIODevice::WriteOnly);
+			output << QString ("queue");
+			output << QString ("leaved");
+			
+			QDataStream lenout (&length, QIODevice::WriteOnly);
+			lenout << pong.size ();
+			
+			socket->write (length);
+			socket->write (pong);
 		}
 	}
 }

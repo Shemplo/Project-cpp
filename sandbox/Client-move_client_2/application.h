@@ -7,6 +7,7 @@
 #include <QMainWindow>
 
 #include <userform.h>
+#include <queueform.h>
 
 namespace Ui {
 	class Application;
