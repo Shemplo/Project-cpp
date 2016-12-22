@@ -20,6 +20,9 @@ class Client : public QObject {
 		
 		qint32 getId ();
 		
+	signals:
+		void signalGameReady (qint32 id);
+		
 	private slots:
 		void slotReadStream ();
 		void slotDisconnect ();

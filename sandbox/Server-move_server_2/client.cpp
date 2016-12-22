@@ -136,9 +136,6 @@ void Client::parseInputStream (QByteArray data) {
 		if (target == "join_queue") {
 			std::cout << "[SERVER] Client #" << identf 
 					  << " joined queue" << std::endl;
-			server->joinToBattle (this->identf);
-			status = 1;
-			
 			QByteArray pong, length;
 			QDataStream output (&pong, QIODevice::WriteOnly);
 			output << QString ("battle");
@@ -149,6 +146,9 @@ void Client::parseInputStream (QByteArray data) {
 			
 			socket->write (length);
 			socket->write (pong);
+			
+			server->joinToBattle (this);
+			status = 1;
 		}
 	} else if (command == "queue") {
 		QString target; input >> target;
@@ -174,7 +174,7 @@ void Client::parseInputStream (QByteArray data) {
 		} else if (target == "leave") {
 			std::cout << "[SERVER] Client #" << identf 
 					  << " leaved queue" << std::endl;
-			server->leaveQueue (identf);
+			server->leaveQueue (this);
 			
 			QByteArray pong, length;
 			QDataStream output (&pong, QIODevice::WriteOnly);

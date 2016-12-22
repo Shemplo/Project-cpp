@@ -1,5 +1,6 @@
 #include "server.h"
 #include "client.h"
+#include "game.h"
 
 Server::Server (QObject* parent) : QObject (parent) {
 	server = new QTcpServer (this);
@@ -43,7 +44,7 @@ void Server::stop (qint32 code) {
 void Server::removeClient (Client* client) {
 	std::cout << "[CLIENT] Disconnecting #" 
 			  << client->getId () << " ..." << std::endl;
-	leaveQueue (client->getId ());
+	leaveQueue (client);
 	
 	qint32 index = connects.indexOf (client);
 	if (index != -1) { connects.remove (index); }
@@ -52,50 +53,61 @@ void Server::removeClient (Client* client) {
 			  << " disconnected from server" << std::endl;
 }
 
-void Server::joinToBattle (qint32 identif) {
-	qint32 index = queue.indexOf (identif);
+void Server::joinToBattle (Client* client) {
+	qint32 index = queue.indexOf (client);
 	if (index != -1) { return; }
 	
 	for (qint32 i = 0; i < queue.size (); i ++) {
-		qint32 identif = queue.at (i);
+		QByteArray write;
+		QDataStream output (&write, QIODevice::WriteOnly);
+		QString command = "queue"; output << command;
+		QString target  = "users"; output << target;
 		
-		for (qint32 j = 0; j < connects.size (); j ++) {
-			if (connects.at (j)->getId () == identif) {
-				QByteArray write;
-				QDataStream output (&write, QIODevice::WriteOnly);
-				QString command = "queue"; output << command;
-				QString target  = "users"; output << target;
-				
-				output << queueSize () + 1;
-				
-				connects.at (j)->writeInSocket (write);
-			}
-		}
+		//Writing how many players in queue
+		output << queueSize () + 1;
+		
+		queue.at (i)->writeInSocket (write);
 	}
 	
-	queue.append (identif);
+	queue.append (client);
+	
+	if (queueSize () >= 2) {
+		Game* game = new Game (this);
+		bool added = true;
+		
+		added = added && game->addPlayer (queue.at (0));
+		added = added && game->addPlayer (queue.at (1));
+		
+		if (added) {
+			queue.removeFirst ();
+			queue.removeFirst ();
+			
+			games.append  (game);
+			game->closeAdding ();
+		}
+	}
 }
 
-void Server::leaveQueue (qint32 identif) {
-	qint32 index = queue.indexOf (identif);
+void Server::leaveQueue (Client* client) {
+	qint32 index = queue.indexOf (client);
 	if (index != -1) { queue.remove (index); }
 	
 	for (qint32 i = 0; i < queue.size (); i ++) {
-		qint32 identif = queue.at (i);
+		QByteArray write;
+		QDataStream output (&write, QIODevice::WriteOnly);
+		QString command = "queue"; output << command;
+		QString target  = "users"; output << target;
 		
-		for (qint32 j = 0; j < connects.size (); j ++) {
-			if (connects.at (j)->getId () == identif) {
-				QByteArray write;
-				QDataStream output (&write, QIODevice::WriteOnly);
-				QString command = "queue"; output << command;
-				QString target  = "users"; output << target;
-				
-				output << queueSize ();
-				
-				connects.at (j)->writeInSocket (write);
-			}
-		}
+		//Writing how many players in queue
+		output << queueSize ();
+		
+		queue.at (i)->writeInSocket (write);
 	}
+}
+
+void Server::closeGame (Game* game) {
+	qint32 index = games.indexOf (game);
+	if (index != -1) { games.remove (index); }
 }
 
 qint32 Server::queueSize () {
@@ -143,7 +155,8 @@ void Server::slotNewConnection () {
 void Server::slotPulse () {
 	std::cout << "[INFO] Server information: " << std::endl 
 			  << "         Active connections:    " << connects.size () << std::endl 
-			  << "         Players in queue:      " << queue.size () << std::endl
+			  << "         Players in queue:      " << queue.size () << std::endl 
+			  << "         Active games:          " << games.size () << std::endl
 			  << "         Server listening port: " << server->serverPort () << std::endl
 			  << "         Server date and time:  " << QDateTime::currentDateTime ().
 														toString ("dd.MM.yyyy hh:mm:ss").

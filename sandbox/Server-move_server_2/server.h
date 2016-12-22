@@ -11,6 +11,7 @@
 #include <QTcpSocket>
 
 class Client;
+class Game;
 
 class Server : public QObject {
 		
@@ -23,8 +24,10 @@ class Server : public QObject {
 		void stop  (qint32 code);
 		
 		void removeClient (Client* client);
-		void joinToBattle (qint32 identif);
-		void leaveQueue   (qint32 identif);
+		void joinToBattle (Client* client);
+		void leaveQueue   (Client* client);
+		
+		void closeGame (Game* game);
 		
 		qint32 queueSize  ();
 		
@@ -37,7 +40,8 @@ class Server : public QObject {
 		
 		QTcpServer*       server;
 		QVector <Client*> connects;
-		QVector <qint32>  queue;
+		QVector <Client*>  queue;
+		QVector <Game*>   games;
 		
 		QTimer* pulse;
 		

@@ -46,6 +46,8 @@ void Application::slotReadStream () {
 			bufferArray.remove (0, sizeof (qint32));
 			
 			if (bufferArray.size () >= need && need != 0) {
+				//std::cout << bufferArray.left (need).toStdString () 
+				//		  << std::endl;
 				emit signalReceivedData (bufferArray.left (need));
 				bufferArray.remove (0, need);
 				need = 0;
