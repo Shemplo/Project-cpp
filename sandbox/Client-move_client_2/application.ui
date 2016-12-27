@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Panzer assault</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">/*background-color: white;*/</string>
+  </property>
   <widget class="QWidget" name="centralWidget"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

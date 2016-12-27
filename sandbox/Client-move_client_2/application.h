@@ -8,6 +8,7 @@
 
 #include <userform.h>
 #include <queueform.h>
+#include <gameform.h>
 
 namespace Ui {
 	class Application;
@@ -18,8 +19,8 @@ class Application : public QMainWindow {
 	Q_OBJECT
 		
 	public:
-		explicit Application (QWidget *parent = 0);
-		~Application ();
+		explicit Application  (QWidget *parent = 0);
+		~Application          ();
 		
 		void connectHost      (QString host, qint32 port);
 		void disconnectHost   ();

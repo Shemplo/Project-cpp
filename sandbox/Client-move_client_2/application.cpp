@@ -10,8 +10,6 @@ Application::Application (QWidget *parent) : QMainWindow (parent),
 	
 	ui->setupUi (this);
 	slotSwitchForm (1);
-	
-	
 }
 
 void Application::connectHost (QString host, qint32 port) {
@@ -126,6 +124,18 @@ void Application::slotSwitchForm (int form) {
 				 this, &Application::slotSwitchForm);
 		connect (socket, &QTcpSocket::disconnected,
 				 widget, &QueueForm::slotDisconnected);
+	} else if (form == 3) {
+		GameForm* widget = new GameForm (this);
+		
+		ui->centralWidget->setStyle (widget->style ());
+		this->setFixedSize (widget->size ());
+		ui->centralWidget = widget;
+		ui->centralWidget->show ();
+		
+		connect (widget, &GameForm::signalSwitchForm,
+				 this, &Application::slotSwitchForm);
+		connect (socket, &QTcpSocket::disconnected,
+				 widget, &GameForm::slotDisconnected);
 	}
 }
 

@@ -17,17 +17,24 @@ TEMPLATE = app
 SOURCES += main.cpp\
     userform.cpp \
     application.cpp \
-    queueform.cpp
+    queueform.cpp \
+    gameform.cpp \
+    gamescene.cpp \
+    dronmodel.cpp
 
 HEADERS  += \
     userform.h \
     application.h \
-    queueform.h
+    queueform.h \
+    gameform.h \
+    gamescene.h \
+    dronmodel.h
 
 FORMS    += \
     userform.ui \
     application.ui \
-    queueform.ui
+    queueform.ui \
+    gameform.ui
 
 RESOURCES += \
     icons.qrc

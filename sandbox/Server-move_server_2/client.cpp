@@ -31,6 +31,11 @@ qint32 Client::getId () {
 	return this->identf;
 }
 
+MachineInfo::Machine Client::getMachine () {
+	qint32 machineId = machines.at (selectedMachine);
+	return machineInfo.getInfo (machineId);
+}
+
 void Client::slotReadStream () {
 	while (socket->bytesAvailable () > 0) {
 		bufferArray.append (socket->readAll ());
@@ -67,7 +72,8 @@ void Client::parseInputStream (QByteArray data) {
 	QDataStream input (&data, QIODevice::ReadOnly);
 	QString command; input >> command;
 	
-	if (command != "client_ping") {
+	if (command != "client_ping"
+			&& command != "battle") {
 		std::cout << "[SOCKET] Received command: " 
 				  << command.toStdString () 
 				  << std::endl;
@@ -133,6 +139,12 @@ void Client::parseInputStream (QByteArray data) {
 	} else if (command == "battle") {
 		QString target; input >> target;
 		
+		if (target != "buttons") {
+			std::cout << "[SOCKET] Received command: " 
+					  << target.toStdString () 
+					  << std::endl;
+		}
+		
 		if (target == "join_queue") {
 			std::cout << "[SERVER] Client #" << identf 
 					  << " joined queue" << std::endl;
@@ -149,9 +161,15 @@ void Client::parseInputStream (QByteArray data) {
 			
 			server->joinToBattle (this);
 			status = 1;
+		} else if (target == "connected") {
+			emit signalGameReady (identf);
 		}
 	} else if (command == "queue") {
 		QString target; input >> target;
+		
+		std::cout << "[SOCKET] Received target: " 
+				  << target.toStdString () 
+				  << std::endl;
 		
 		if (target == "info") {
 			QByteArray pong, length;

@@ -88,7 +88,6 @@ void QueueForm::slotReceivedData (QByteArray data) {
 		QString target; input >> target;
 		
 		if (target == "joined_game") {
-			std::cout << "Close adding" << std::endl;
 			emit signalSwitchForm (3);
 		}
 	}

@@ -1,6 +1,8 @@
 #ifndef CLIENTCONNECTION_H
 #define CLIENTCONNECTION_H
 
+#include <iostream>
+
 #include <QObject>
 #include <QTcpSocket>
 #include <QDataStream>
@@ -18,7 +20,8 @@ class Client : public QObject {
 		
 		void writeInSocket (QByteArray data);
 		
-		qint32 getId ();
+		qint32               getId      ();
+		MachineInfo::Machine getMachine ();
 		
 	signals:
 		void signalGameReady (qint32 id);

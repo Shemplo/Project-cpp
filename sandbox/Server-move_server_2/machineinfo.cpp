@@ -7,7 +7,7 @@ MachineInfo::MachineInfo () {
 	ms1.level  = 1;
 	ms1.health = 140;
 	ms1.armor  = 14;
-	ms1.speed  = 4;
+	ms1.speed  = 4 / 3;
 	ms1.rotate = 3;
 	ms1.damage = 20;
 	ms1.duration = 60 / 10;
