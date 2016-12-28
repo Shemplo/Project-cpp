@@ -324,6 +324,7 @@ void Game::moveDrons () {
 					bullet->angle  = angleToTarget;
 					bullet->speed  = drons.at (i)->bullet;
 					bullet->damage = drons.at (i)->damage;
+					std::cout << bullet->damage << std::endl;
 					bullet->penetration = drons.at (i)->penetration;
 					
 					bullet->fromId = i;
@@ -376,6 +377,10 @@ void Game::moveBullets () {
 										dalpha);
 		if (shotedDron != -1) {
 			if (bullets.at (i)->fromId != shotedDron) {
+				std::cout << drons.at (shotedDron)->health << std::endl;
+				drons.at (shotedDron)->health -= bullets.at (i)->damage;
+				std::cout << drons.at (shotedDron)->health << std::endl;
+				
 				bullets.remove (i); i --;
 				continue;
 			}
@@ -465,7 +470,7 @@ qint32 Game::checkDrons (QString asix,
 	for (qint32 i = 0; i < drons.size (); i ++) {
 		Dron* dron = drons.at (i);
 		model1->setBounds (QRectF (dron->x, dron->y, 
-								  dron->width, dron->health));\
+								  dron->width, dron->health));
 		qreal daplha1 = std::atan ((double) dron->health 
 								   / (double) dron->width) / 2;
 		QPolygonF bounds1 = model1->boundingPolygon (dron->x, dron->y,
