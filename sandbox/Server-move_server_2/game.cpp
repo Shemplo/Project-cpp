@@ -44,9 +44,13 @@ bool Game::addPlayer (Client* client) {
 		dronInfo->health   = height;
 		dronInfo->diagonal = std::sqrt (width * width + height * height) / 2;
 		
-		dronInfo->speed = machine.speed;
+		dronInfo->speed    = machine.speed;
+		dronInfo->duration = machine.duration;
+		dronInfo->bullet   = machine.bullet;
+		dronInfo->capacity = machine.capacity;
+		dronInfo->penetration = machine.penetration;
 		
-		players.append   (dronInfo);
+		drons.append   (dronInfo);
 		clients.append   (client);
 		readyMask.append (false);
 		
@@ -148,7 +152,7 @@ void Game::slotSecondLeft () {
 		output << clients.size ();
 		
 		for (qint32 i = 0; i < clients.size (); i ++) {
-			Dron* player = players.at (i);
+			Dron* player = drons.at (i);
 			output << (qreal) player->x;
 			output << (qreal) player->y;
 			output << (qreal) player->angle;
@@ -193,7 +197,8 @@ void Game::slotSecondLeft () {
 }
 
 void Game::slotGameTick () {
-	moveDrons ();
+	moveDrons   ();
+	moveBullets ();
 	
 	QByteArray message;
 	QDataStream output (&message, QIODevice::WriteOnly);
@@ -203,14 +208,24 @@ void Game::slotGameTick () {
 	output << clients.size ();
 	
 	for (qint32 i = 0; i < clients.size (); i ++) {
-		Dron* player = players.at (i);
+		Dron* player = drons.at (i);
 		output << (qreal) player->x;
 		output << (qreal) player->y;
 		output << (qreal) player->angle;
+		output << (qreal) player->turretAngle;
 		
 		MInfo machine = clients.at (i)->getMachine ();
 		output << (qint32) player->health;
 		output << (qint32) machine.health;
+	}
+	
+	output << bullets.size ();
+	
+	for (qint32 i = 0; i < bullets.size (); i ++) {
+		Bullet* bullet = bullets.at (i);
+		output << (qreal) bullet->x;
+		output << (qreal) bullet->y;
+		output << (qreal) bullet->angle;
 	}
 	
 	for (qint32 i = 0; i < clients.size (); i ++) {
@@ -219,22 +234,22 @@ void Game::slotGameTick () {
 }
 
 void Game::moveDrons () {
+	//Move drons
 	for (qint32 i = 0; i < clients.size (); i ++) {
-		qint32 width   = players.at (i)->width;
-		qint32 height  = players.at (i)->health;
-		qreal diagonal = players.at (i)->diagonal;
+		qint32 width   = drons.at (i)->width;
+		qint32 height  = drons.at (i)->health;
+		qreal diagonal = drons.at (i)->diagonal;
 		qreal dalpha   = std::atan ((double) height / (double) width) / 2;
 		
-		qreal speed = players.at (i)->speed;
-		qreal angle = players.at (i)->angle;
-		qreal x = players.at (i)->x;
-		qreal y = players.at (i)->y;
+		qreal speed = drons.at (i)->speed;
+		qreal angle = drons.at (i)->angle;
+		qreal x = drons.at (i)->x;
+		qreal y = drons.at (i)->y;
 		
-		qreal c = std::cos (angle * Pi / 180);
-		qreal s = std::sin (angle * Pi / 180);
+		qreal c = std::cos (rad (angle));
+		qreal s = std::sin (rad (angle));
 		
-		bool f = players.at (i)->forward;
-		if (f || true) {
+		if (clients.at (i)->forward) {
 			x += c * speed;
 			y += s * speed;
 		}
@@ -242,8 +257,98 @@ void Game::moveDrons () {
 		if (!checkArenaBounds ("X", x, y, angle, diagonal, dalpha)) { x -= c * speed; }
 		if (!checkArenaBounds ("Y", x, y, angle, diagonal, dalpha)) { y -= s * speed; }
 		
-		players.at (i)->x = x;
-		players.at (i)->y = y;
+		drons.at (i)->x = x;
+		drons.at (i)->y = y;
+		
+		if (clients.at (i)->left || clients.at (i)->right) {
+			qreal x = drons.at (i)->x;
+			qreal y = drons.at (i)->y;
+			qreal prev = angle;
+			
+			if (clients.at (i)->left) { angle -= 2; }
+			else                      { angle += 2; }
+			if (angle > 180 || angle < -180) { angle = normalizeAngle (angle); }
+			
+			if (!checkArenaBounds ("X", x, y, angle, diagonal, dalpha)) { angle = prev; }
+			if (!checkArenaBounds ("Y", x, y, angle, diagonal, dalpha)) { angle = prev; }
+		}
+		
+		drons.at (i)->angle = angle;
+		
+		QLineF toTarget (QPointF (x, y), clients.at (i)->target);
+		qreal angleToTarget = -toTarget.angle ();
+		
+		//std::cout << x << " " << y << " " << clients.at (i)->target.x () << " " << angleToTarget << std::endl;
+		if (std::abs (angleToTarget - angle) >= 0) { drons.at (i)->turretAngle = angleToTarget - angle; } 
+		else                                       { drons.at (i)->turretAngle = angle - angleToTarget; }
+		
+		qreal timeShot = drons.at (i)->duration;
+		if (drons.at (i)->timeout >= gameTimer->interval () * timeShot) {
+			x = drons.at (i)->x;
+			y = drons.at (i)->y;
+						
+			for (qint32 j = 0; j < clients.at (i)->shots.size (); j ++) {
+				if (drons.at (i)->capacity > 0) {
+					QPointF targetCoords  = clients.at (i)->shots.front ();
+					QLineF  toTargetLine  (QPointF (x, y), targetCoords);
+					qreal   angleToTarget = -toTargetLine.angle ();
+					
+					Bullet* bullet = new Bullet ();
+					bullet->x = x; bullet->y = y;
+					bullet->angle  = angleToTarget;
+					bullet->speed  = drons.at (i)->bullet;
+					bullet->damage = drons.at (i)->damage;
+					bullet->penetration = drons.at (i)->penetration;
+					
+					bullet->fromId = i;
+					bullets.append (bullet);
+					
+					drons.at (i)->capacity --;
+					clients.at (i)->shots.pop_front ();
+					
+					drons.at (i)->timeout = -1;
+				}
+			}
+		} else {
+			clients.at (i)->shots.clear ();
+		}
+		
+		qint32 t = drons.at (i)->timeout;
+		drons.at (i)->timeout = t < 1024 ? t + 1 : t;
+	}
+}
+
+void Game::moveBullets () {
+	//Move bullets
+	for (qint32 i = 0; i < bullets.size (); i ++) {
+		qint32 width   = bullets.at (i)->width;
+		qint32 height  = bullets.at (i)->height;
+		qreal diagonal = std::sqrt (width * width + height * height) / 2;
+		qreal dalpha   = std::atan ((double) height / (double) width) / 2;
+		
+		qreal speed = bullets.at (i)->speed;
+		qreal angle = bullets.at (i)->angle;
+		qreal x = bullets.at (i)->x;
+		qreal y = bullets.at (i)->y;
+		
+		angle = normalizeAngle (angle);
+		bullets.at (i)->angle = angle;
+		
+		x += std::cos (rad (angle)) * speed;
+		y += std::sin (rad (angle)) * speed;
+		
+		if (!checkArenaBounds ("X", x, y, angle, diagonal, dalpha)) {
+			bullets.remove (i); i --;
+			continue;
+		}
+		
+		if (!checkArenaBounds ("Y", x, y, angle, diagonal, dalpha)) {
+			bullets.remove (i); i --;
+			continue;
+		}
+		
+		bullets.at (i)->x = x;
+		bullets.at (i)->y = y;
 	}
 }
 
@@ -276,6 +381,13 @@ bool Game::checkArenaBounds (QString asix,
 	}
 	
 	return true;
+}
+
+qreal Game::normalizeAngle (qreal angle) {
+	while (angle > 180) { angle -= 360; }
+	while (angle < -180) { angle += 360; }
+	
+	return angle;
 }
 
 qreal Game::rad (qreal angle) {

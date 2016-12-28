@@ -1,6 +1,8 @@
 #ifndef GAMESCENE_H
 #define GAMESCENE_H
 
+#include <iostream>
+
 #include <QObject>
 #include <QKeyEvent>
 #include <QGraphicsScene>

@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+#include <QQueue>
 #include <QObject>
 #include <QTcpSocket>
 #include <QDataStream>
@@ -22,6 +23,14 @@ class Client : public QObject {
 		
 		qint32               getId      ();
 		MachineInfo::Machine getMachine ();
+		
+		bool forward = false, 
+			 left    = false, 
+			 right   = false;
+		
+		QPointF target;
+		
+		QQueue <QPointF> shots;
 		
 	signals:
 		void signalGameReady (qint32 id);

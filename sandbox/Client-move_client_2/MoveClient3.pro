@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     queueform.cpp \
     gameform.cpp \
     gamescene.cpp \
-    dronmodel.cpp
+    dronmodel.cpp \
+    bulletmodel.cpp
 
 HEADERS  += \
     userform.h \
@@ -28,7 +29,8 @@ HEADERS  += \
     queueform.h \
     gameform.h \
     gamescene.h \
-    dronmodel.h
+    dronmodel.h \
+    bulletmodel.h
 
 FORMS    += \
     userform.ui \

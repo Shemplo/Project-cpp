@@ -14,6 +14,7 @@ GameForm::GameForm (Application* app) : QWidget (app),
 	ui->battlefield->setRenderHint (QPainter::Antialiasing);
 	ui->battlefield->setVerticalScrollBarPolicy   (Qt::ScrollBarAlwaysOff);
 	ui->battlefield->setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
+	ui->battlefield->setMouseTracking (true);
 	
 	connect (app, &Application::signalReceivedData,
 			 this, &GameForm::slotReceivedData);
@@ -34,9 +35,24 @@ GameForm::GameForm (Application* app) : QWidget (app),
 	app->writeInSocket (ask);
 	
 	sendButtons = new QTimer (this);
+	buttons.reset ();
 	
 	connect (sendButtons, &QTimer::timeout,
 			 this, &GameForm::slotSendButtons);
+	
+	this->target = QPointF (0, 0);
+	
+	connect (scene, &GameScene::signalMove,
+			 this, &GameForm::slotSetTarget);
+	connect (scene, &GameScene::signalClick,
+			 this, &GameForm::slotMakeShot);
+	
+	for (qint32 i = 0; i < 100; i ++) {
+		BulletModel* bullet = new BulletModel (this, i);
+		bullet->setPos (QPointF (-100000, -100000));
+		scene->addItem (bullet);
+		bullets.append (bullet);
+	}
 }
 
 GameForm::~GameForm () {
@@ -185,8 +201,9 @@ void GameForm::slotReceivedData (QByteArray data) {
 				
 				qreal angle; input >> angle;
 				angles.append (angle);
+				turretAngles.append (0);
 				
-				DronModel* dron = new DronModel ();
+				DronModel* dron = new DronModel (this, i);
 				scene->addItem (dron);
 				drons.append (dron);
 				
@@ -210,7 +227,7 @@ void GameForm::slotReceivedData (QByteArray data) {
 			connect (scene, &GameScene::signalButton,
 					 this, &GameForm::slotButton);
 			
-			sendButtons->start (1000 / 10);
+			sendButtons->start (1000 / 30);
 			playing = true;
 		} else if (target == "game_info") {
 			qint32 minutes; input >> minutes;
@@ -227,10 +244,29 @@ void GameForm::slotReceivedData (QByteArray data) {
 				qreal angle; input >> angle;
 				angles.replace (i, angle);
 				
+				qreal turretAngle; input >> turretAngle;
+				turretAngles.replace (i, turretAngle);
+				
 				qint32 maxHealth;  input >> maxHealth;
 				qint32 realHealth; input >> realHealth;
 				heath.replace (i, std::make_pair (realHealth, 
 												  maxHealth));
+			}
+			
+			input >> number;
+			
+			for (qint32 i = 0; i < number; i ++) {
+				qreal x, y; input >> x >> y;
+				bullets.at (i)->setPos (QPointF (x, y));
+				
+				qreal angle; input >> angle;
+				bullets.at (i)->setRotation (angle);
+			}
+			
+			for (qint32 i = number; i < bullets.size (); i ++) {
+				//bulletCoords.replace (i, QPointF (-100000, -100000));
+				bullets.at (i)->setPos (QPointF (-100000, -100000));
+				bullets.at (i)->setRotation (0);
 			}
 			
 			updateData ("all");
@@ -244,7 +280,31 @@ void GameForm::slotSendButtons () {
 		QDataStream output (&ask, QIODevice::WriteOnly);
 		QString command = "battle";  output << command;
 		QString target  = "buttons"; output << target;
-									 output << identf;
+									 //output << identf;
+		output << buttons.isAcive (Qt::Key_W);
+		output << buttons.isAcive (Qt::Key_A);
+		output << buttons.isAcive (Qt::Key_D);
+		
+		output << (qreal) this->target.x ();
+		output << (qreal) this->target.y ();
+		
+		app->writeInSocket (ask);
+	}
+}
+
+void GameForm::slotSetTarget (QPointF target) {
+	this->target = target;
+}
+
+void GameForm::slotMakeShot (int button) {
+	if (button == Qt::LeftButton) {
+		QByteArray ask;
+		QDataStream output (&ask, QIODevice::WriteOnly);
+		QString command = "battle"; output << command;
+		QString target  = "shot";   output << target;
+		
+		output << (qreal) this->target.x ();
+		output << (qreal) this->target.y ();
 		
 		app->writeInSocket (ask);
 	}

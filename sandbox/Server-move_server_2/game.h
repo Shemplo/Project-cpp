@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <QLineF>
 #include <QTimer>
 #include <QVector>
 #include <QObject>
@@ -53,22 +54,43 @@ class Game : public QObject {
 			qreal damage = 0, duration = 0;
 			qreal bullet = 0, capacity = 0;
 			qint32 width = 0, height   = 0;
+			qreal penetration = 0;
+			qreal turretAngle = 0;
+			QPointF target;
 			
-			bool forward = false, 
-				 left    = false, 
-				 right   = false;
+			qint32 timeout = 0;
+			
+			qreal battleDamege = 0;
+			qreal battleKills  = 0;
 		};
 		
-		QVector <Dron*> players;
+		struct Bullet {
+			qreal x = 0, y = 0;
+			qreal angle    = 0;
+			
+			qreal speed  = 0;
+			qreal damage = 0;
+			qreal penetration = 0;
+			
+			qint32 fromId = -1;
+			
+			qreal  width  = 12;
+			qreal  height = 2;
+		};
+		
+		QVector <Dron*>   drons;
+		QVector <Bullet*> bullets;
 		bool playing = false;
 		
-		void moveDrons ();
+		void moveDrons   ();
+		void moveBullets ();
 		bool checkArenaBounds (QString asix, 
 							   qreal x, 
 							   qreal y, 
 							   qreal angle, 
 							   qreal diagonal,
 							   qreal dalpha);
+		qreal normalizeAngle (qreal angle);
 		qreal rad (qreal angle);
 		
 };

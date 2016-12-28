@@ -163,6 +163,18 @@ void Client::parseInputStream (QByteArray data) {
 			status = 1;
 		} else if (target == "connected") {
 			emit signalGameReady (identf);
+		} else if (target == "buttons") {
+			input >> forward;
+			input >> left;
+			input >> right;
+			
+			qreal x, y; input >> x >> y;
+			this->target = QPointF (x, y);
+		} else if (target == "shot") {
+			qreal x; input >> x;
+			qreal y; input >> y;
+			
+			shots.append (QPointF (x, y));
 		}
 	} else if (command == "queue") {
 		QString target; input >> target;

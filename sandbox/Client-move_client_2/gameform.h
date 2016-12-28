@@ -10,6 +10,7 @@
 #include <dronmodel.h>
 #include <gamescene.h>
 #include <application.h>
+#include <bulletmodel.h>
 
 namespace Ui {
 	class gameform;
@@ -30,6 +31,12 @@ class GameForm : public QWidget {
 		bool isActiveButton (int button);
 		void updateData (QString target);
 		
+		QVector <QPointF> coords;
+		QVector <qreal>   angles;
+		QVector <qreal>   turretAngles;
+		
+		QVector <BulletModel*> bullets;
+		
 	signals:
 		void signalSwitchForm (int form);
 		
@@ -41,6 +48,9 @@ class GameForm : public QWidget {
 		void slotReceivedData (QByteArray data);
 		void slotSendButtons  ();
 		
+		void slotSetTarget    (QPointF);
+		void slotMakeShot     (int);
+		
 	private:
 		Ui::gameform* ui;
 		Application*  app;
@@ -49,6 +59,12 @@ class GameForm : public QWidget {
 		
 		struct Buttons {
 			std::array <bool, 10> buffer;
+			
+			void reset () {
+				for (int i = 0; i < buffer.size (); i ++) {
+					buffer.at (i) = false;
+				}
+			}
 			
 			bool isAcive (int button) {
 				if (button == Qt::Key_W) return buffer [0];
@@ -71,9 +87,9 @@ class GameForm : public QWidget {
 		
 		QVector <std::pair <qint32, qint32>> heath;
 		QVector <std::pair <qint32, qint32>> points;
-		QVector <QPointF>    coords;
-		QVector <qreal>      angles;
 		QVector <DronModel*> drons;
+		
+		QPointF target;
 		
 		bool playing = false;
 		QTimer* sendButtons;

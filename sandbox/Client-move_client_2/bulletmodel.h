@@ -1,5 +1,7 @@
-#ifndef DRONMODEL_H
-#define DRONMODEL_H
+#ifndef BULLETMODEL_H
+#define BULLETMODEL_H
+
+#include <iostream>
 
 #include <QObject>
 #include <QPainter>
@@ -7,12 +9,12 @@
 
 class GameForm;
 
-class DronModel : public QObject, public QGraphicsItem {
+class BulletModel : public QObject, public QGraphicsItem {
 		
 	Q_OBJECT
 		
 	public:
-		explicit DronModel (GameForm* form, qint32 number);
+		explicit BulletModel (GameForm*, qint32);
 		
 	protected:
 		QRectF boundingRect () const;
@@ -29,4 +31,4 @@ class DronModel : public QObject, public QGraphicsItem {
 		
 };
 
-#endif // DRONMODEL_H
+#endif // BULLETMODEL_H

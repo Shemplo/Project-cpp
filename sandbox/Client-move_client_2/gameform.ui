@@ -39,13 +39,28 @@ font-size: 10pt;</string>
       </size>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color: darkgray;</string>
+      <string notr="true">background-color: darkgrey;</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::Box</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="lineWidth">
+      <number>1</number>
+     </property>
+     <property name="midLineWidth">
+      <number>0</number>
+     </property>
+     <property name="backgroundBrush">
+      <brush brushstyle="NoBrush">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
      </property>
     </widget>
    </item>

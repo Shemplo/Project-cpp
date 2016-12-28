@@ -13,11 +13,14 @@ void GameScene::mousePressEvent (QGraphicsSceneMouseEvent* event) {
 }
 
 void GameScene::mouseReleaseEvent (QGraphicsSceneMouseEvent* event) {
+	setFocus ();
+	
 	Q_UNUSED (event);
 	emit signalClick (-1);
 }
 
 void GameScene::keyPressEvent (QKeyEvent* event) {
+	//std::cout << "*** button ***" << std::endl;
 	emit signalButton (event->key (), 1);
 }
 
