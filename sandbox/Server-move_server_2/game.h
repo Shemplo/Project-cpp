@@ -5,8 +5,10 @@
 #include <QTimer>
 #include <QVector>
 #include <QObject>
+#include <QGraphicsItem>
 
 #include <server.h>
+#include <mapinfo.h>
 
 class Game : public QObject {
 		
@@ -39,10 +41,12 @@ class Game : public QObject {
 		void startGame ();
 		QTimer* gameTimer;
 		
-		QVector <std::pair <qreal, 
-							qreal>> spawns;
-		qint32 awidth  = 490;
-		qint32 aheight = 490;
+		MapInfo             mapInfo;
+		QVector <QPolygonF> obstacles;
+		
+		qint32  selectedMap = 0;
+		qint32  awidth  = 490;
+		qint32  aheight = 490;
 		
 		struct Dron {
 			qreal x = 0, y = 0; 
@@ -85,13 +89,71 @@ class Game : public QObject {
 		void moveDrons   ();
 		void moveBullets ();
 		bool checkArenaBounds (QString asix, 
-							   qreal x, 
-							   qreal y, 
+							   qreal x, qreal y, 
 							   qreal angle, 
 							   qreal diagonal,
 							   qreal dalpha);
+		bool checkObstacles   (QString asix,
+							   qreal x, qreal y,
+							   qreal angle,
+							   qreal width, qreal height,
+							   qreal dalpha);
+		qint32 checkDrons      (QString asix,
+							   qreal x, qreal y,
+							   qreal angle,
+							   qreal width, qreal height,
+							   qreal dalpha);
 		qreal normalizeAngle (qreal angle);
-		qreal rad (qreal angle);
+		qreal static rad (qreal angle);
+		
+		class CollisionModel : public QGraphicsItem {
+			
+			public:
+				void setBounds (QRectF bounds) {
+					this->bounds = bounds;
+				}
+				
+				QRectF boundingRect () const {
+					return bounds;
+				}
+				
+				QPolygonF boundingPolygon (qreal x, 
+										   qreal y, 
+										   qreal a,
+										   qreal dalpha) {
+					qreal width  = this->bounds.width ();
+					qreal height = this->bounds.height ();
+					qreal diagonal = std::sqrt (width * width + height * height) / 2;
+					
+					QPolygonF bounds;
+					bounds << QPointF (x + diagonal * std::cos (rad (a) + dalpha), 
+									   y - diagonal * std::sin (rad (a) + dalpha));
+					bounds << QPointF (x + diagonal * std::cos (rad (a) - dalpha), 
+									   y - diagonal * std::sin (rad (a) - dalpha));
+					bounds << QPointF (x - diagonal * std::cos (rad (a) + dalpha), 
+									   y + diagonal * std::sin (rad (a) + dalpha));
+					bounds << QPointF (x - diagonal * std::cos (rad (a) - dalpha), 
+									   y + diagonal * std::sin (rad (a) - dalpha));
+					
+					return bounds;
+				}
+				
+				void paint (QPainter* painter, 
+							const QStyleOptionGraphicsItem* option,
+							QWidget* widget) {
+					Q_UNUSED (painter);
+					Q_UNUSED (option);
+					Q_UNUSED (widget);
+					// Stub
+				}
+				
+			private:
+				QRectF bounds;
+				
+		};
+		
+		CollisionModel* model;
+		CollisionModel* model1;
 		
 };
 

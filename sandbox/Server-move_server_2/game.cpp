@@ -2,7 +2,8 @@
 #include "client.h"
 #include "machineinfo.h"
 
-#define MInfo MachineInfo::Machine
+#define MInfo  MachineInfo::Machine
+#define MpInfo MapInfo::Map
 
 static const double Pi = 3.14159265358979323846264338327950288419717;
 
@@ -20,22 +21,28 @@ Game::Game (Server* server) : QObject (server) {
 	connect (gameTimer, &QTimer::timeout,
 			 this, &Game::slotGameTick);
 	
-	spawns.append (std::make_pair (-100, -100));
-	spawns.append (std::make_pair (-100, 100));
-	spawns.append (std::make_pair (100, -100));
-	spawns.append (std::make_pair (100, 100));
+	MapInfo mapInfo;
+	qint32 mapsNumber = mapInfo.getNumber ();
+	selectedMap = std::rand () % mapsNumber;
+	
+	obstacles = mapInfo.getMap (selectedMap)
+					   .obstacles;
+	
+	model  = new CollisionModel ();
+	model1 = new CollisionModel ();
 }
 
 bool Game::addPlayer (Client* client) {
 	if (status == 0 && clients.size () < 4) {
-		std::pair <qreal, 
-				   qreal> pair = spawns.at (clients.size ());
+		QPointF pair = mapInfo.getMap(selectedMap)
+							  .spawns
+							  .at (clients.size ());
 		MInfo machine = client->getMachine ();
 		
-		Dron* dronInfo   = new Dron (); 
-		dronInfo->x      = pair.first; 				 
-		dronInfo->y      = pair.second;
-		dronInfo->angle  = std::rand () % 30;
+		Dron* dronInfo   = new Dron  (); 
+		dronInfo->x      = pair.x    (); 				 
+		dronInfo->y      = pair.y    ();
+		dronInfo->angle  = 0;
 		dronInfo->health = machine.health;
 		
 		qint32 width  = machine.width;
@@ -149,6 +156,13 @@ void Game::slotSecondLeft () {
 		QDataStream output (&message, QIODevice::WriteOnly);
 		output << QString ("battle");
 		output << QString ("pre_countdown");
+		
+		output << obstacles.size ();
+		
+		for (qint32 i = 0; i < obstacles.size (); i ++) {
+			output << (QPolygonF) obstacles.at (i);
+		}
+		
 		output << clients.size ();
 		
 		for (qint32 i = 0; i < clients.size (); i ++) {
@@ -252,6 +266,13 @@ void Game::moveDrons () {
 		if (clients.at (i)->forward) {
 			x += c * speed;
 			y += s * speed;
+			
+			if (!checkObstacles ("", x, y, 
+								 angle, 
+								 width, height, 
+								 dalpha)) { 
+				x -= c * speed; y -= s * speed; 
+			}
 		}
 		
 		if (!checkArenaBounds ("X", x, y, angle, diagonal, dalpha)) { x -= c * speed; }
@@ -261,16 +282,21 @@ void Game::moveDrons () {
 		drons.at (i)->y = y;
 		
 		if (clients.at (i)->left || clients.at (i)->right) {
-			qreal x = drons.at (i)->x;
-			qreal y = drons.at (i)->y;
-			qreal prev = angle;
+			//qreal x = drons.at (i)->x;
+			//qreal y = drons.at (i)->y;
+			//qreal prev = angle;
 			
 			if (clients.at (i)->left) { angle -= 2; }
 			else                      { angle += 2; }
 			if (angle > 180 || angle < -180) { angle = normalizeAngle (angle); }
 			
-			if (!checkArenaBounds ("X", x, y, angle, diagonal, dalpha)) { angle = prev; }
-			if (!checkArenaBounds ("Y", x, y, angle, diagonal, dalpha)) { angle = prev; }
+			/*if (!checkArenaBounds ("X", x, y, angle, diagonal, dalpha)) {
+				angle = prev + (angle - prev) / 2;
+			}
+			
+			if (!checkArenaBounds ("Y", x, y, angle, diagonal, dalpha)) {
+				angle = prev + (angle - prev) / 2;
+			}*/
 		}
 		
 		drons.at (i)->angle = angle;
@@ -337,6 +363,24 @@ void Game::moveBullets () {
 		x += std::cos (rad (angle)) * speed;
 		y += std::sin (rad (angle)) * speed;
 		
+		if (!checkObstacles ("", x, y, 
+							 angle, 
+							 width, height, 
+							 dalpha)) { 
+			bullets.remove (i); i --;
+			continue;
+		}
+		
+		qint32 shotedDron = checkDrons ("", x, y, angle,
+										width, height,
+										dalpha);
+		if (shotedDron != -1) {
+			if (bullets.at (i)->fromId != shotedDron) {
+				bullets.remove (i); i --;
+				continue;
+			}
+		}
+		
 		if (!checkArenaBounds ("X", x, y, angle, diagonal, dalpha)) {
 			bullets.remove (i); i --;
 			continue;
@@ -381,6 +425,56 @@ bool Game::checkArenaBounds (QString asix,
 	}
 	
 	return true;
+}
+
+bool Game::checkObstacles (QString asix, 
+						   qreal x, qreal y,
+						   qreal angle,
+						   qreal width, qreal height,
+						   qreal dalpha) {
+	Q_UNUSED (asix);
+	
+	model->setBounds (QRectF (x, y, width, height));
+	QPolygonF bounds = model->boundingPolygon (x, y, 
+											   angle, 
+											   dalpha);
+	
+	for (qint32 i = 0; i < obstacles.size (); i ++) {
+		if (!obstacles.at (i)
+					  .intersected (bounds)
+					  .isEmpty ()) {
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+qint32 Game::checkDrons (QString asix, 
+					    qreal x, qreal y,
+					    qreal angle,
+					    qreal width, qreal height,
+					    qreal dalpha) {
+	Q_UNUSED (asix);
+	
+	model->setBounds (QRectF (x, y, width, height));
+	QPolygonF bounds = model->boundingPolygon (x, y, 
+											   angle, 
+											   dalpha);
+	
+	for (qint32 i = 0; i < drons.size (); i ++) {
+		Dron* dron = drons.at (i);
+		model1->setBounds (QRectF (dron->x, dron->y, 
+								  dron->width, dron->health));\
+		qreal daplha1 = std::atan ((double) dron->health 
+								   / (double) dron->width) / 2;
+		QPolygonF bounds1 = model1->boundingPolygon (dron->x, dron->y,
+													dron->angle, daplha1);
+		
+		if (!bounds1.intersected (bounds).isEmpty ()) { return i; }
+	}
+	
+	return -1;
 }
 
 qreal Game::normalizeAngle (qreal angle) {

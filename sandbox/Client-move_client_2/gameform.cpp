@@ -189,7 +189,18 @@ void GameForm::slotReceivedData (QByteArray data) {
 		QString target; input >> target;
 		
 		if (target == "pre_countdown") {
+			// Number of obstacles polygons
 			qint32 number; input >> number;
+			
+			for (qint32 i = 0; i < number; i ++) {
+				QPolygonF obstacle; input >> obstacle;
+				scene->addPolygon (obstacle, 
+								   QPen (Qt::black), 
+								   QBrush (Qt::darkGray));
+			}
+			
+			input >> number; // Number of drons
+			
 			angles.clear ();
 			drons.clear  ();
 			heath.clear  ();
