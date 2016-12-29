@@ -31,6 +31,8 @@ class GameForm : public QWidget {
 		bool isActiveButton (int button);
 		void updateData (QString target);
 		
+		qint32 gameId;
+		
 		QVector <QPointF> coords;
 		QVector <qreal>   angles;
 		QVector <qreal>   turretAngles;

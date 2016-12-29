@@ -48,12 +48,13 @@ bool Game::addPlayer (Client* client) {
 		qint32 width  = machine.width;
 		qint32 height = machine.height;
 		dronInfo->width    = width;
-		dronInfo->health   = height;
+		dronInfo->height   = height;
 		dronInfo->diagonal = std::sqrt (width * width + height * height) / 2;
 		
 		dronInfo->speed    = machine.speed;
 		dronInfo->duration = machine.duration;
 		dronInfo->bullet   = machine.bullet;
+		dronInfo->damage   = machine.damage;
 		dronInfo->capacity = machine.capacity;
 		dronInfo->penetration = machine.penetration;
 		
@@ -166,6 +167,8 @@ void Game::slotSecondLeft () {
 		output << clients.size ();
 		
 		for (qint32 i = 0; i < clients.size (); i ++) {
+			output << clients.at (i)->getId ();
+			
 			Dron* player = drons.at (i);
 			output << (qreal) player->x;
 			output << (qreal) player->y;
@@ -222,15 +225,18 @@ void Game::slotGameTick () {
 	output << clients.size ();
 	
 	for (qint32 i = 0; i < clients.size (); i ++) {
-		Dron* player = drons.at (i);
-		output << (qreal) player->x;
-		output << (qreal) player->y;
-		output << (qreal) player->angle;
-		output << (qreal) player->turretAngle;
+		Dron* dron = drons.at (i);
+		output << (qreal) dron->x;
+		output << (qreal) dron->y;
+		output << (qreal) dron->angle;
+		output << (qreal) dron->turretAngle;
 		
 		MInfo machine = clients.at (i)->getMachine ();
-		output << (qint32) player->health;
+		output << (qint32) dron->health;
 		output << (qint32) machine.health;
+		
+		output << (qint32) dron->winPoints;
+		output << 200; // Needed win points
 	}
 	
 	output << bullets.size ();
@@ -251,7 +257,7 @@ void Game::moveDrons () {
 	//Move drons
 	for (qint32 i = 0; i < clients.size (); i ++) {
 		qint32 width   = drons.at (i)->width;
-		qint32 height  = drons.at (i)->health;
+		qint32 height  = drons.at (i)->height;
 		qreal diagonal = drons.at (i)->diagonal;
 		qreal dalpha   = std::atan ((double) height / (double) width) / 2;
 		
@@ -324,7 +330,6 @@ void Game::moveDrons () {
 					bullet->angle  = angleToTarget;
 					bullet->speed  = drons.at (i)->bullet;
 					bullet->damage = drons.at (i)->damage;
-					std::cout << bullet->damage << std::endl;
 					bullet->penetration = drons.at (i)->penetration;
 					
 					bullet->fromId = i;
@@ -375,11 +380,21 @@ void Game::moveBullets () {
 		qint32 shotedDron = checkDrons ("", x, y, angle,
 										width, height,
 										dalpha);
+		
 		if (shotedDron != -1) {
 			if (bullets.at (i)->fromId != shotedDron) {
-				std::cout << drons.at (shotedDron)->health << std::endl;
 				drons.at (shotedDron)->health -= bullets.at (i)->damage;
-				std::cout << drons.at (shotedDron)->health << std::endl;
+				
+				if (drons.at (shotedDron)->health <= 0) {
+					QVector <QPointF> s = mapInfo.getMap (selectedMap)
+												 .spawns;
+					MInfo machine = clients.at (shotedDron)->getMachine ();
+					drons.at (shotedDron)->health = machine.health;
+					
+					drons.at (shotedDron)->x = s.at (shotedDron).x ();
+					drons.at (shotedDron)->y = s.at (shotedDron).y ();
+					drons.at (bullets.at (i)->fromId)->winPoints += 1;
+				}
 				
 				bullets.remove (i); i --;
 				continue;
@@ -470,8 +485,8 @@ qint32 Game::checkDrons (QString asix,
 	for (qint32 i = 0; i < drons.size (); i ++) {
 		Dron* dron = drons.at (i);
 		model1->setBounds (QRectF (dron->x, dron->y, 
-								  dron->width, dron->health));
-		qreal daplha1 = std::atan ((double) dron->health 
+								  dron->width, dron->height));
+		qreal daplha1 = std::atan ((double) dron->height 
 								   / (double) dron->width) / 2;
 		QPolygonF bounds1 = model1->boundingPolygon (dron->x, dron->y,
 													dron->angle, daplha1);
@@ -491,4 +506,41 @@ qreal Game::normalizeAngle (qreal angle) {
 
 qreal Game::rad (qreal angle) {
 	return angle * Pi / 180;
+}
+
+// Inline class implimentation
+
+QPolygonF Game::CollisionModel::boundingPolygon (qreal x, qreal y, 
+												 qreal a, qreal dalpha) {
+	qreal width  = this->bounds.width ();
+	qreal height = this->bounds.height ();
+	qreal diagonal = std::sqrt (width * width + height * height) / 2;
+	
+	QPolygonF bounds;
+	bounds << QPointF (x + diagonal * std::cos (rad (a) + dalpha), 
+					   y - diagonal * std::sin (rad (a) + dalpha));
+	bounds << QPointF (x + diagonal * std::cos (rad (a) - dalpha), 
+					   y - diagonal * std::sin (rad (a) - dalpha));
+	bounds << QPointF (x - diagonal * std::cos (rad (a) + dalpha), 
+					   y + diagonal * std::sin (rad (a) + dalpha));
+	bounds << QPointF (x - diagonal * std::cos (rad (a) - dalpha), 
+					   y + diagonal * std::sin (rad (a) - dalpha));
+	
+	return bounds;
+}
+
+void Game::CollisionModel::setBounds (QRectF bounds) {
+	this->bounds = bounds;
+}
+
+QRectF Game::CollisionModel::boundingRect () const {
+	return bounds;
+}
+
+void Game::CollisionModel::paint (QPainter* painter, 
+								  const QStyleOptionGraphicsItem* option,
+								  QWidget* widget) {
+	Q_UNUSED (painter);
+	Q_UNUSED (option);
+	Q_UNUSED (widget);
 }

@@ -6,8 +6,10 @@
 class MachineInfo {
 		
 	public:
-		explicit MachineInfo ();
+		MachineInfo ();
 		
+		// Structure of keeping
+		// data about machine (...)
 		struct Machine {
 			qint32 id    = 0;
 			qint32 level = 0;
@@ -22,6 +24,8 @@ class MachineInfo {
 			qint32 width = 40, height = 20;
 		};
 		
+		// Get informaton about machine
+		// with given number (id)
 		Machine getInfo (qint32 id);
 		
 	private:

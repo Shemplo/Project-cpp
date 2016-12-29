@@ -4,7 +4,6 @@
 #define MInfo MachineInfo::Machine
 
 Client::Client (QTcpSocket* socket, qint32 id, Server* server) : QObject (server) {
-	this->status = 0;      //Just connected to server
 	this->identf = id;
 	this->server = server;
 	this->socket = socket;
@@ -160,7 +159,6 @@ void Client::parseInputStream (QByteArray data) {
 			socket->write (pong);
 			
 			server->joinToBattle (this);
-			status = 1;
 		} else if (target == "connected") {
 			emit signalGameReady (identf);
 		} else if (target == "buttons") {

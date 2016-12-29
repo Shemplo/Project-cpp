@@ -7,15 +7,21 @@
 class MapInfo {
 		
 	public:
-		explicit MapInfo ();
+		MapInfo ();
 		
+		// Structure of keeping
+		// data about map (...)
 		struct Map {
 			QVector <QPointF>   spawns;
 			QVector <QPolygonF> bases;
 			QVector <QPolygonF> obstacles;
 		};
 		
+		// Get informaton about map
+		// with given number (id)
 		Map    getMap    (qint32);
+		
+		// Get number of maps in array
 		qint32 getNumber ();
 		
 	private:

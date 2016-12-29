@@ -11,7 +11,7 @@ MachineInfo::MachineInfo () {
 	ms1.rotate = 3;
 	ms1.damage = 20;
 	ms1.duration = 60.0 / 10.0;
-	ms1.bullet = 11.0 / 5.5;
+	ms1.bullet = 11.0;
 	ms1.capacity = 500;
 	ms1.penetration = 20;
 	machines.insert (ms1.id, ms1);
@@ -26,7 +26,7 @@ MachineInfo::MachineInfo () {
 	t1.rotate = 3.5;
 	t1.damage = 5;
 	t1.duration = 60.0 / 40.0;
-	t1.bullet = 13.0 / 5.5;
+	t1.bullet = 13.0;
 	t1.capacity = 1500;
 	t1.penetration = 11;
 	machines.insert (t1.id, t1);

@@ -10,10 +10,10 @@ MapInfo::MapInfo () {
 	
 	QPolygonF fObs1;
 	fObs1 << QPointF (-200, -150);
-	fObs1 << QPointF (-200, -110);
+	fObs1 << QPointF (-190, -110);
 	fObs1 << QPointF (-130, -110);
 	fObs1 << QPointF (-40, -180);
-	fObs1 << QPointF (-120, -190);
+	fObs1 << QPointF (-110, -190);
 	fObs1 << QPointF (-170, -170);
 	first.obstacles.append (fObs1);
 	

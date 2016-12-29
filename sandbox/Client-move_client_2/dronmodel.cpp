@@ -55,6 +55,17 @@ void DronModel::paint (QPainter* painter,
 	painter->setBrush (Qt::darkGray);
 	painter->drawPolygon (cabin);
 	
+	if (number == form->gameId) {
+		QPolygonF flag;
+		flag << QPointF (-3, -6) 
+			 << QPointF (3, -6) 
+			 << QPointF (3, -4)
+			 << QPointF (-3, -4);
+		
+		painter->setBrush (Qt::black);
+		painter->drawPolygon (flag);
+	}
+	
 	QLine gun;
 	gun.setP1 (QPoint (20, 0));
 	gun.setP2 (QPoint (10, 0));

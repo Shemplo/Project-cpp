@@ -208,7 +208,7 @@ void GameForm::slotReceivedData (QByteArray data) {
 			
 			for (int i = 0; i < number; i ++) {
 				qint32 id; input >> id;
-				if (id == identf) { gameId = i; std::cout << "ID: " << i << std::endl; }
+				if (id == app->identf) { gameId = i; std::cout << "ID: " << i << std::endl; }
 				
 				qreal x, y;  input >> x >> y;
 				coords.append (QPointF (x, y));
